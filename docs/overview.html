@@ -405,7 +405,7 @@
     header.hero h1 { font-size: 22px; }
     .panel { padding: 14px; }
     .labels-grid { grid-template-columns: 1fr; }
-    .diagram svg { max-height: 720px; }
+    .diagram svg { max-height: 980px; }
   }
 
   /* ===== Print ===== */
@@ -415,6 +415,7 @@
     .setups { grid-template-columns: 1fr 1fr !important; }
     .setups.single-a .panel-b, .setups.single-b .panel-a { display: block !important; }
     .panel, .diff .card, .labels { box-shadow: none; break-inside: avoid; }
+    .connect-overlay { display: none !important; }
   }
 
   /* Tiny coloured pin chip */
@@ -466,7 +467,8 @@
     width: 100%;
     height: auto;
     display: block;
-    max-height: 560px;
+    max-height: 820px;
+    overflow: visible; /* allow side tag text to extend past viewBox when tight */
   }
   .legend {
     display: flex;
@@ -513,35 +515,44 @@
   svg .pin-box.role-gnd    { fill: #d8d6cf; stroke: #9d9b91; cursor: pointer; }
   svg .pin-box.is-strap    { stroke: #d68a55; stroke-width: 1.5; stroke-dasharray: 3 2; }
   svg .pin-box.is-strap.role-none { fill: #fbe7d7; }
-  svg .pin-box.flash { stroke-width: 2; filter: drop-shadow(0 0 4px rgba(80,80,80,0.45)); }
+  svg .pin-box.flash { stroke-width: 2.25; filter: drop-shadow(0 0 4px rgba(80,80,80,0.45)); }
+  svg .pin-box.dim { opacity: 0.18; }
+  svg .pin-box.lit { stroke-width: 2.25; filter: drop-shadow(0 0 5px rgba(80,80,80,0.5)); }
   svg .pin-label {
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
-    font-size: 10px;
+    font-size: 14px;
+    font-weight: 600;
     fill: var(--ink);
     pointer-events: none;
   }
   svg .pin-gpio {
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
-    font-size: 8.5px;
+    font-size: 11px;
     fill: var(--ink-faint);
     pointer-events: none;
   }
   svg .pin-tag {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    font-size: 9px;
-    fill: var(--ink-soft);
+    font-size: 12px;
+    font-weight: 600;
+    fill: var(--ink);
     pointer-events: none;
+    paint-order: stroke fill;
+    stroke: #ffffff;
+    stroke-width: 3px;
+    stroke-linejoin: round;
   }
   svg .pin-tag.strap-tag { fill: #8a4416; font-style: italic; }
   svg .pin-num-circle {
     fill: #ffffff;
     stroke: var(--line-strong);
-    stroke-width: 0.75;
+    stroke-width: 0.9;
   }
   svg .pin-num-text {
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
-    font-size: 7.5px;
-    fill: var(--ink-faint);
+    font-size: 11px;
+    font-weight: 600;
+    fill: var(--ink-soft);
     pointer-events: none;
   }
   svg .board-outline {
@@ -550,9 +561,95 @@
     stroke-width: 1;
   }
   svg .usb-block { fill: #b7b1a0; stroke: #87826f; stroke-width: 1; }
-  svg .silk { fill: var(--ink-faint); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 10px; }
-  svg .silk-small { fill: var(--ink-faint); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 8.5px; }
+  svg .silk {
+    fill: var(--ink-soft);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  svg .silk-small {
+    fill: var(--ink-faint);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 11.5px;
+  }
   svg .pin1-marker { fill: #b03030; }
+
+  /* ===== Connection overlay (links Pi pins -> ESP pins) ===== */
+  .setups-wrap {
+    position: relative;
+  }
+  .setups-wrap .connect-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 5;
+    overflow: visible;
+  }
+  /* Disable overlay outside side-by-side view */
+  .setups-wrap.no-overlay .connect-overlay { display: none; }
+  /* Each connection wire: a stacked pair of paths — white halo + coloured stroke */
+  .connect-overlay .wire {
+    pointer-events: stroke;
+    cursor: pointer;
+  }
+  .connect-overlay .wire-halo {
+    fill: none;
+    stroke: #ffffff;
+    stroke-width: 5;
+    stroke-linecap: round;
+    opacity: 0.85;
+    pointer-events: none;
+  }
+  .connect-overlay .wire-line {
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: 0.35;
+    transition: opacity 120ms ease, stroke-width 120ms ease;
+  }
+  .connect-overlay .wire-hit {
+    fill: none;
+    stroke: transparent;
+    stroke-width: 14;
+    stroke-linecap: round;
+    pointer-events: stroke;
+    cursor: pointer;
+  }
+  .connect-overlay.has-active .wire-line { opacity: 0.12; }
+  .connect-overlay.has-active .wire-line.active { opacity: 1; stroke-width: 3; }
+  .connect-overlay.has-active .wire-halo { opacity: 0.35; }
+  .connect-overlay.has-active .wire-halo.active { opacity: 1; }
+  .connect-overlay .wire-line.active { opacity: 1; stroke-width: 3; }
+  /* per-role stroke colours (slightly darkened/saturated for thin curves) */
+  .connect-overlay .wire-line.role-spi    { stroke: #3a7ec0; }
+  .connect-overlay .wire-line.role-cs     { stroke: #6aa6e0; }
+  .connect-overlay .wire-line.role-sensor { stroke: #c4961c; }
+  .connect-overlay .wire-line.role-pump   { stroke: #b14a3a; }
+  .connect-overlay .wire-line.role-power  { stroke: #3a8a5a; }
+  .connect-overlay .wire-line.role-gnd    { stroke: #6a6a62; }
+
+  /* wire tooltip */
+  .wire-tooltip {
+    position: fixed;
+    pointer-events: none;
+    background: var(--ink);
+    color: #ffffff;
+    padding: 5px 9px;
+    border-radius: 5px;
+    font-size: 12px;
+    line-height: 1.4;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.25);
+    transform: translate(-50%, calc(-100% - 10px));
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 100ms ease;
+    z-index: 1100;
+  }
+  .wire-tooltip.show { opacity: 1; }
 
   .pin-tooltip {
     position: fixed;
@@ -594,6 +691,9 @@
   <button data-mode="b" aria-pressed="false">Setup B — ESP only</button>
 </div>
 
+<div class="setups-wrap" id="setups-wrap">
+<svg class="connect-overlay" id="connect-overlay" aria-hidden="true"
+     xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"></svg>
 <section class="setups" id="setups">
 
   <!-- ============== SETUP A — Raspberry Pi ============== -->
@@ -633,18 +733,18 @@
       <div class="diagram" aria-label="Raspberry Pi 3B 40-pin header diagram">
         <div class="diagram-title">
           <h4>40-pin header (looking down at the board, pin 1 marked)</h4>
-          <span class="hint">hover for role &middot; click to cross-highlight</span>
+          <span class="hint">hover a pin or wire &middot; click to pin it &middot; click outside to clear</span>
         </div>
-        <svg viewBox="0 0 460 540" role="img" aria-label="Raspberry Pi 40-pin header"
+        <svg viewBox="0 0 760 720" role="img" aria-label="Raspberry Pi 40-pin header"
              xmlns="http://www.w3.org/2000/svg" data-diagram="pi">
           <!-- header outline -->
-          <rect class="board-outline" x="60" y="22" width="340" height="498" rx="6" />
-          <text class="silk" x="230" y="14" text-anchor="middle">Raspberry Pi 3B &mdash; 40-pin header</text>
-          <text class="silk-small" x="230" y="535" text-anchor="middle">odd pins (1, 3, 5 &hellip;) on the left &middot; even pins (2, 4, 6 &hellip;) on the right</text>
+          <rect class="board-outline" x="200" y="30" width="360" height="660" rx="6" />
+          <text class="silk" x="380" y="20" text-anchor="middle">Raspberry Pi 3B &mdash; 40-pin header</text>
+          <text class="silk-small" x="380" y="710" text-anchor="middle">odd pins (1, 3, 5 &hellip;) on the left &middot; even pins (2, 4, 6 &hellip;) on the right</text>
 
-          <!-- pin 1 marker -->
-          <polygon class="pin1-marker" points="78,30 88,30 83,40" />
-          <text class="silk-small" x="92" y="36" fill="#b03030">PIN 1</text>
+          <!-- pin 1 marker (right-pointing triangle inside the board, pointing at pin 1) -->
+          <polygon class="pin1-marker" points="210,57 222,64 210,71" />
+          <text class="silk-small" x="266" y="44" text-anchor="middle" fill="#b03030" font-weight="700">PIN 1</text>
 
           <g id="pi-pins"></g>
         </svg>
@@ -821,34 +921,35 @@
       <div class="diagram" aria-label="NodeMCU Amica pinout">
         <div class="diagram-title">
           <h4>NodeMCU Amica pinout (USB at the top)</h4>
-          <span class="hint">hover for role &middot; click to cross-highlight</span>
+          <span class="hint">hover a pin or wire &middot; click to pin it &middot; click outside to clear</span>
         </div>
-        <svg viewBox="0 0 460 540" role="img" aria-label="NodeMCU Amica pinout"
+        <svg viewBox="0 0 760 720" role="img" aria-label="NodeMCU Amica pinout"
              xmlns="http://www.w3.org/2000/svg" data-diagram="esp">
           <!-- USB connector -->
-          <rect class="usb-block" x="190" y="6" width="80" height="22" rx="2" />
-          <text class="silk-small" x="230" y="22" text-anchor="middle" fill="#ffffff" stroke="none">USB</text>
+          <rect class="usb-block" x="340" y="8" width="80" height="26" rx="2" />
+          <text class="silk-small" x="380" y="26" text-anchor="middle" fill="#ffffff" stroke="none" font-weight="700">USB</text>
 
           <!-- board -->
-          <rect class="board-outline" x="120" y="34" width="220" height="486" rx="6" />
-          <text class="silk" x="230" y="60" text-anchor="middle">NodeMCU Amica</text>
-          <text class="silk-small" x="230" y="74" text-anchor="middle">ESP-12 module</text>
+          <rect class="board-outline" x="220" y="40" width="320" height="652" rx="6" />
+          <text class="silk" x="380" y="68" text-anchor="middle">NodeMCU Amica</text>
+          <text class="silk-small" x="380" y="86" text-anchor="middle">ESP-12 module</text>
 
-          <!-- ESP-12 module box -->
-          <rect x="155" y="86" width="150" height="170" rx="4"
+          <!-- ESP-12 module box (sits between the two pin columns) -->
+          <rect x="335" y="100" width="90" height="220" rx="4"
                 fill="#e6e3d8" stroke="#9d9b91" stroke-width="1" />
-          <text class="silk-small" x="230" y="172" text-anchor="middle">ESP-12 (Ai-Thinker)</text>
+          <text class="silk-small" x="380" y="216" text-anchor="middle">ESP-12</text>
+          <text class="silk-small" x="380" y="232" text-anchor="middle">(Ai-Thinker)</text>
 
-          <!-- onboard LED + buttons silk -->
-          <circle cx="148" cy="276" r="3" fill="#3b76d1" stroke="#1e4a8a" />
-          <text class="silk-small" x="155" y="279">LED (D4 / GPIO2)</text>
-          <rect x="138" y="298" width="22" height="14" rx="2" fill="#cfccc0" stroke="#9d9b91" />
-          <text class="silk-small" x="149" y="308" text-anchor="middle">RST</text>
-          <rect x="300" y="298" width="22" height="14" rx="2" fill="#cfccc0" stroke="#9d9b91" />
-          <text class="silk-small" x="311" y="308" text-anchor="middle">FLASH</text>
-          <text class="silk-small" x="311" y="320" text-anchor="middle">(D3/GPIO0)</text>
+          <!-- onboard LED + buttons silk (centre gap, below the ESP-12 chip) -->
+          <circle cx="368" cy="344" r="4" fill="#3b76d1" stroke="#1e4a8a" />
+          <text class="silk-small" x="376" y="348">LED (D4)</text>
+          <rect x="345" y="378" width="30" height="18" rx="2" fill="#cfccc0" stroke="#9d9b91" />
+          <text class="silk-small" x="360" y="391" text-anchor="middle">RST</text>
+          <rect x="386" y="378" width="34" height="18" rx="2" fill="#cfccc0" stroke="#9d9b91" />
+          <text class="silk-small" x="403" y="391" text-anchor="middle">FLASH</text>
+          <text class="silk-small" x="403" y="406" text-anchor="middle">(D3/GPIO0)</text>
 
-          <text class="silk-small" x="230" y="510" text-anchor="middle">A0 is the only analog input (0&ndash;3.3 V via onboard divider)</text>
+          <text class="silk-small" x="380" y="704" text-anchor="middle">A0 is the only analog input (0&ndash;3.3 V via onboard divider)</text>
 
           <g id="esp-pins"></g>
         </svg>
@@ -1005,6 +1106,9 @@
   </article>
 
 </section>
+</div>
+
+<div class="wire-tooltip" id="wire-tooltip" role="tooltip" aria-hidden="true"></div>
 
 <!-- ============== DIFF ============== -->
 <h2>What changes, what stays</h2>
@@ -1083,15 +1187,25 @@
   // ---- mode toggle ----
   var modes = document.querySelector(".modes");
   var setups = document.getElementById("setups");
+  var setupsWrap = document.getElementById("setups-wrap");
+  var currentMode = "both";
   function setMode(mode) {
+    currentMode = mode;
     setups.classList.remove("single-a", "single-b");
     if (mode === "a") setups.classList.add("single-a");
     if (mode === "b") setups.classList.add("single-b");
+    // overlay only visible in side-by-side view
+    if (setupsWrap) {
+      if (mode === "both") setupsWrap.classList.remove("no-overlay");
+      else setupsWrap.classList.add("no-overlay");
+    }
     var btns = modes.querySelectorAll("button");
     for (var i = 0; i < btns.length; i++) {
       btns[i].setAttribute("aria-pressed", btns[i].dataset.mode === mode ? "true" : "false");
     }
     try { localStorage.setItem("potpi.mode", mode); } catch (e) {}
+    // recompute connection-line positions after layout settles
+    if (typeof scheduleRelayout === "function") scheduleRelayout();
   }
   modes.addEventListener("click", function (e) {
     var t = e.target.closest("button[data-mode]");
@@ -1286,16 +1400,56 @@
     return t;
   }
 
+  // ---- wire-id mapping (specific pin -> shared wire id) ----
+  // The wire id uniquely identifies one strand running from a Pi pin to an ESP pin.
+  // We tag the relevant pins via data-wire so the overlay can pair them up.
+  // Pi pin index format: [rowIndex, 0=odd|1=even].
+  var piWireMap = {
+    "0,0": "power-3v3",   // pin 1 — 3V3
+    "0,1": "power-5v",    // pin 2 — 5V
+    "2,1": "gnd",         // pin 6 — GND (the one tagged for MCP3008 + RELAY)
+    "5,0": "pump-2",      // pin 11 — GPIO 17 pump
+    "5,1": "sensor-pwr",  // pin 12 — GPIO 18 sensor gate
+    "9,0": "spi-mosi",    // pin 19 — MOSI
+    "10,0": "spi-miso",   // pin 21 — MISO
+    "11,0": "spi-clk",    // pin 23 — SCLK
+    "14,0": "spi-cs"      // pin 29 — GPIO 5 (CS)
+  };
+  // ESP pin index format: [col(L|R), index]
+  var espWireMap = {
+    "L,13": "gnd",        // left col GND (MCP3008 + RELAY)
+    "L,14": "power-5v",   // VIN
+    "R,0":  "spi-cs",     // D0
+    "R,1":  "pump-2",     // D1
+    "R,2":  "sensor-pwr", // D2
+    "R,5":  "power-3v3",  // 3V3
+    "R,7":  "spi-clk",    // D5
+    "R,8":  "spi-miso",   // D6
+    "R,9":  "spi-mosi"    // D7
+  };
+  // wire id -> role class on the line + human label
+  var wireMeta = {
+    "spi-clk":     { role: "role-spi",    label: "MCP3008 SCLK" },
+    "spi-miso":    { role: "role-spi",    label: "MCP3008 MISO" },
+    "spi-mosi":    { role: "role-spi",    label: "MCP3008 MOSI" },
+    "spi-cs":      { role: "role-cs",     label: "MCP3008 CS" },
+    "power-3v3":   { role: "role-power",  label: "3V3 — MCP3008 VDD + VREF" },
+    "power-5v":    { role: "role-power",  label: "5V / Vin — Relay coil supply" },
+    "gnd":         { role: "role-gnd",    label: "Ground (MCP3008 + Relay)" },
+    "sensor-pwr":  { role: "role-sensor", label: "Sensor power gate" },
+    "pump-2":      { role: "role-pump",   label: "Pump 2 relay IN (active-LOW)" }
+  };
+
   function renderPiPins() {
     var g = document.getElementById("pi-pins");
     if (!g) return;
     var startY = 50;
-    var rowH = 22;
-    var pinW = 90;
-    var pinH = 18;
-    var leftX = 72;     // odd pins
-    var rightX = 460 - 72 - pinW; // even pins
-    var midX = 230;
+    var rowH = 32;
+    var pinW = 100;
+    var pinH = 28;
+    var midX = 380;                    // SVG centre (viewBox 760)
+    var leftX = midX - 50 - pinW;      // odd pins (230)
+    var rightX = midX + 50;            // even pins (430)
 
     for (var i = 0; i < piPins.length; i++) {
       var oddPinNum = i * 2 + 1;
@@ -1304,74 +1458,89 @@
 
       // pin number circles in middle
       var cyL = yTop + pinH / 2;
-      var cnL = mkSvg("circle", { cx: midX - 14, cy: cyL, r: 7.5, "class": "pin-num-circle" });
+      var cnL = mkSvg("circle", { cx: midX - 18, cy: cyL, r: 10, "class": "pin-num-circle" });
       g.appendChild(cnL);
-      g.appendChild(mkText(midX - 14, cyL + 2.5, String(oddPinNum), "pin-num-text", "middle"));
-      var cnR = mkSvg("circle", { cx: midX + 14, cy: cyL, r: 7.5, "class": "pin-num-circle" });
+      g.appendChild(mkText(midX - 18, cyL + 3.5, String(oddPinNum), "pin-num-text", "middle"));
+      var cnR = mkSvg("circle", { cx: midX + 18, cy: cyL, r: 10, "class": "pin-num-circle" });
       g.appendChild(cnR);
-      g.appendChild(mkText(midX + 14, cyL + 2.5, String(evenPinNum), "pin-num-text", "middle"));
+      g.appendChild(mkText(midX + 18, cyL + 3.5, String(evenPinNum), "pin-num-text", "middle"));
 
       // left pin (odd)
-      renderPin(g, piPins[i][0], leftX, yTop, pinW, pinH, "left", oddPinNum, "pi");
+      renderPin(g, piPins[i][0], leftX, yTop, pinW, pinH, "left",  oddPinNum,  "pi",
+                piWireMap[i + ",0"]);
       // right pin (even)
-      renderPin(g, piPins[i][1], rightX, yTop, pinW, pinH, "right", evenPinNum, "pi");
+      renderPin(g, piPins[i][1], rightX, yTop, pinW, pinH, "right", evenPinNum, "pi",
+                piWireMap[i + ",1"]);
     }
   }
 
   function renderEspPins() {
     var g = document.getElementById("esp-pins");
     if (!g) return;
-    var startY = 90;
-    var rowH = 27;
-    var pinW = 90;
-    var pinH = 22;
-    var leftX = 28;
-    var rightX = 460 - 28 - pinW;
+    var startY = 108;
+    var rowH = 38;
+    var pinW = 100;
+    var pinH = 30;
+    var midX = 380;                    // viewBox centre (760)
+    var leftX = midX - 50 - pinW;      // 230
+    var rightX = midX + 50;            // 430
 
     for (var i = 0; i < espLeft.length; i++) {
       var yTop = startY + i * rowH;
-      renderPin(g, espLeft[i], leftX, yTop, pinW, pinH, "left", i + 1, "esp");
-      renderPin(g, espRight[i], rightX, yTop, pinW, pinH, "right", i + 1, "esp");
+      renderPin(g, espLeft[i],  leftX,  yTop, pinW, pinH, "left",  i + 1, "esp",
+                espWireMap["L," + i]);
+      renderPin(g, espRight[i], rightX, yTop, pinW, pinH, "right", i + 1, "esp",
+                espWireMap["R," + i]);
     }
   }
 
-  function renderPin(parent, pin, x, y, w, h, side, idx, diag) {
+  function renderPin(parent, pin, x, y, w, h, side, idx, diag, wireId) {
     var role = pin.role || "";
     var cls = "pin-box";
     var rc = roleClass(role);
     if (rc) cls += " " + rc;
     if (pin.strap) cls += " is-strap role-none";
 
-    var rect = mkSvg("rect", {
+    var rectAttrs = {
       x: x, y: y, width: w, height: h, rx: 3,
       "class": cls,
       "data-role": role || (pin.strap ? "strap" : ""),
       "data-name": pin.label + (pin.gpio ? " (" + pin.gpio + ")" : ""),
-      "data-tag": tagText(pin).join(" — ")
-    });
+      "data-tag": tagText(pin).join(" — "),
+      "data-diagram": diag,
+      "data-side": side
+    };
+    if (wireId) rectAttrs["data-wire"] = wireId;
+    var rect = mkSvg("rect", rectAttrs);
     parent.appendChild(rect);
 
-    // label text (silkscreen)
-    var labelX = side === "left" ? x + 8 : x + w - 8;
+    // label text (silkscreen) + GPIO sub-label
+    // If we have both, stack them: label upper half, GPIO lower half.
+    // If only label, vertically centre it.
+    var labelX = side === "left" ? x + 10 : x + w - 10;
     var anchor = side === "left" ? "start" : "end";
-    parent.appendChild(mkText(labelX, y + 11, pin.label, "pin-label", anchor));
     if (pin.gpio) {
-      parent.appendChild(mkText(labelX, y + 20, pin.gpio, "pin-gpio", anchor));
+      var labelY = y + Math.round(h * 0.44);
+      var gpioY  = y + Math.round(h * 0.86);
+      parent.appendChild(mkText(labelX, labelY, pin.label, "pin-label", anchor));
+      parent.appendChild(mkText(labelX, gpioY,  pin.gpio,  "pin-gpio",  anchor));
+    } else {
+      // single-line label, centre it
+      var soloY = y + Math.round(h * 0.62);
+      parent.appendChild(mkText(labelX, soloY, pin.label, "pin-label", anchor));
     }
 
     // outside tag (role description) if highlighted
     var info = tagText(pin);
     if (info.length) {
-      var tagX = side === "left" ? x - 4 : x + w + 4;
+      var tagX = side === "left" ? x - 6 : x + w + 6;
       var tagAnchor = side === "left" ? "end" : "start";
-      // first line: role tag (or STRAP if only strap)
       var first = info[0];
       var tcls = "pin-tag";
       if (pin.strap && info.length === 1) tcls += " strap-tag";
-      parent.appendChild(mkText(tagX, y + 11, first, tcls, tagAnchor));
+      parent.appendChild(mkText(tagX, y + 12, first, tcls, tagAnchor));
       if (info.length > 1) {
-        // second line: project tag
-        parent.appendChild(mkText(tagX, y + 21, info[1], "pin-tag", tagAnchor));
+        parent.appendChild(mkText(tagX, y + 26, info[1], "pin-tag", tagAnchor));
       }
     }
 
@@ -1453,10 +1622,312 @@
     })(rect));
   }
 
-  // click outside diagrams clears cross-highlight
+  // click outside diagrams clears cross-highlight + active wire
   document.addEventListener("click", function (e) {
-    if (!e.target.closest("svg [data-role]")) clearFlash();
+    if (!e.target.closest("svg [data-role]") &&
+        !e.target.closest(".connect-overlay")) {
+      clearFlash();
+      if (typeof clearActiveWire === "function") clearActiveWire(true);
+    }
   });
+
+  // ============================================================
+  //  Connection overlay — bezier curves from Pi pin to ESP pin
+  // ============================================================
+  var overlay = document.getElementById("connect-overlay");
+  var wireTooltip = document.getElementById("wire-tooltip");
+  var stickyWire = null;
+  var hoverWire = null;
+  var relayoutTimer = null;
+
+  function scheduleRelayout() {
+    if (relayoutTimer) clearTimeout(relayoutTimer);
+    relayoutTimer = setTimeout(layoutWires, 100);
+  }
+
+  // Pick the edge of a pin's bounding box that faces the *other* diagram.
+  // 'self' = 'pi' or 'esp'; we use the centre x of the *other* diagram
+  // (panel-a or panel-b) to decide which side of the pin to anchor on.
+  // This keeps wires emerging from the inner-facing side of the pin in
+  // both side-by-side and stacked layouts.
+  var panelA = document.getElementById("panel-a");
+  var panelB = document.getElementById("panel-b");
+  function anchorFor(rect, self) {
+    var bb = rect.getBoundingClientRect();
+    var otherPanel = self === "pi" ? panelB : panelA;
+    if (!otherPanel) {
+      return { x: self === "pi" ? bb.right : bb.left, y: bb.top + bb.height / 2 };
+    }
+    var ob = otherPanel.getBoundingClientRect();
+    var oCx = ob.left + ob.width / 2;
+    var oCy = ob.top  + ob.height / 2;
+    // Decide which edge is closer to the other panel's centre.
+    var dxR = Math.abs(bb.right - oCx);
+    var dxL = Math.abs(bb.left  - oCx);
+    if (dxR < dxL) return { x: bb.right, y: bb.top + bb.height / 2 };
+    return { x: bb.left, y: bb.top + bb.height / 2 };
+  }
+
+  // Build a curved bezier path from (x1,y1) to (x2,y2).
+  // Horizontal layout: control points bulge horizontally outward.
+  // Vertical (stacked) layout: control points bulge vertically.
+  function curvePath(x1, y1, x2, y2) {
+    var ax = Math.abs(x2 - x1);
+    var ay = Math.abs(y2 - y1);
+    var horizontal = ax >= ay; // side-by-side
+    var d;
+    if (horizontal) {
+      var dx = Math.max(60, ax * 0.45);
+      var cx1 = x1 + dx;
+      var cx2 = x2 - dx;
+      d = "M " + x1.toFixed(1) + " " + y1.toFixed(1) +
+          " C " + cx1.toFixed(1) + " " + y1.toFixed(1) + ", " +
+                 cx2.toFixed(1) + " " + y2.toFixed(1) + ", " +
+                 x2.toFixed(1) + " " + y2.toFixed(1);
+    } else {
+      var dy = Math.max(60, ay * 0.45);
+      var cy1 = y1 + dy;
+      var cy2 = y2 - dy;
+      d = "M " + x1.toFixed(1) + " " + y1.toFixed(1) +
+          " C " + x1.toFixed(1) + " " + cy1.toFixed(1) + ", " +
+                 x2.toFixed(1) + " " + cy2.toFixed(1) + ", " +
+                 x2.toFixed(1) + " " + y2.toFixed(1);
+    }
+    return d;
+  }
+
+  // Build the wire DOM once (svg paths). Recompute geometry on layout.
+  // Each wire has: a hit-path (transparent fat), a white halo, and a coloured line.
+  // Storing references for fast updates on resize.
+  var wires = [];
+
+  function buildWires() {
+    if (!overlay) return;
+    // clear
+    while (overlay.firstChild) overlay.removeChild(overlay.firstChild);
+    wires = [];
+
+    // For each wire id, find the Pi pin (data-diagram=pi) and ESP pin (data-diagram=esp).
+    var wireIds = Object.keys(wireMeta);
+    wireIds.forEach(function (wid) {
+      var piRect  = document.querySelector('rect.pin-box[data-diagram="pi"][data-wire="'  + wid + '"]');
+      var espRect = document.querySelector('rect.pin-box[data-diagram="esp"][data-wire="' + wid + '"]');
+      if (!piRect || !espRect) return;
+
+      var meta = wireMeta[wid];
+
+      var halo = mkSvg("path", {
+        "class": "wire-halo",
+        "data-wire": wid,
+        d: "M 0 0"
+      });
+      var line = mkSvg("path", {
+        "class": "wire-line " + meta.role,
+        "data-wire": wid,
+        d: "M 0 0"
+      });
+      var hit = mkSvg("path", {
+        "class": "wire-hit",
+        "data-wire": wid,
+        d: "M 0 0"
+      });
+      // a11y title
+      var title = mkSvg("title");
+      title.textContent = meta.label;
+      hit.appendChild(title);
+
+      overlay.appendChild(halo);
+      overlay.appendChild(line);
+      overlay.appendChild(hit);
+
+      wires.push({ id: wid, piRect: piRect, espRect: espRect, halo: halo, line: line, hit: hit, meta: meta });
+
+      // hover/click on the hit-path
+      hit.addEventListener("mouseenter", function (e) { onWireEnter(wid, e); });
+      hit.addEventListener("mousemove",  function (e) { onWireMove(e); });
+      hit.addEventListener("mouseleave", function ()  { onWireLeave(); });
+      hit.addEventListener("click",      function (e) { onWireClick(wid, e); });
+    });
+  }
+
+  function layoutWires() {
+    if (!overlay || !setupsWrap) return;
+    if (setupsWrap.classList.contains("no-overlay")) return;
+
+    var wrapBB = setupsWrap.getBoundingClientRect();
+    // Size overlay viewBox to wrap dimensions in CSS pixels.
+    overlay.setAttribute("viewBox", "0 0 " + wrapBB.width + " " + wrapBB.height);
+    overlay.setAttribute("width", wrapBB.width);
+    overlay.setAttribute("height", wrapBB.height);
+
+    for (var i = 0; i < wires.length; i++) {
+      var w = wires[i];
+      var a = anchorFor(w.piRect, "pi");
+      var b = anchorFor(w.espRect, "esp");
+      // translate from viewport coords to overlay-local coords
+      var ax = a.x - wrapBB.left, ay = a.y - wrapBB.top;
+      var bx = b.x - wrapBB.left, by = b.y - wrapBB.top;
+      var d = curvePath(ax, ay, bx, by);
+      w.halo.setAttribute("d", d);
+      w.line.setAttribute("d", d);
+      w.hit.setAttribute("d", d);
+    }
+  }
+
+  // ---- highlight handling for wires + connected pins ----
+  function setWireActive(wid, active) {
+    if (!overlay) return;
+    var halos = overlay.querySelectorAll('.wire-halo[data-wire="' + wid + '"]');
+    var lines = overlay.querySelectorAll('.wire-line[data-wire="' + wid + '"]');
+    var k;
+    for (k = 0; k < halos.length; k++) halos[k].classList.toggle("active", !!active);
+    for (k = 0; k < lines.length; k++) lines[k].classList.toggle("active", !!active);
+    var pins = document.querySelectorAll('rect.pin-box[data-wire="' + wid + '"]');
+    for (k = 0; k < pins.length; k++) {
+      pins[k].classList.toggle("lit", !!active);
+    }
+  }
+
+  function clearActiveWire(alsoSticky) {
+    if (!overlay) return;
+    overlay.classList.remove("has-active");
+    // remove .active from every halo/line
+    var halos = overlay.querySelectorAll(".wire-halo.active");
+    var lines = overlay.querySelectorAll(".wire-line.active");
+    var i;
+    for (i = 0; i < halos.length; i++) halos[i].classList.remove("active");
+    for (i = 0; i < lines.length; i++) lines[i].classList.remove("active");
+    // remove .lit + .dim from pins
+    var litPins = document.querySelectorAll("rect.pin-box.lit");
+    for (i = 0; i < litPins.length; i++) litPins[i].classList.remove("lit");
+    var dimPins = document.querySelectorAll("rect.pin-box.dim");
+    for (i = 0; i < dimPins.length; i++) dimPins[i].classList.remove("dim");
+    if (alsoSticky) stickyWire = null;
+    hoverWire = null;
+    hideWireTooltip();
+  }
+
+  function applyActiveWire(wid) {
+    if (!overlay) return;
+    overlay.classList.add("has-active");
+    // dim all non-wired pins for clearer focus
+    var allHi = document.querySelectorAll('rect.pin-box[data-wire]');
+    for (var i = 0; i < allHi.length; i++) {
+      if (allHi[i].getAttribute("data-wire") !== wid) {
+        allHi[i].classList.add("dim");
+      } else {
+        allHi[i].classList.remove("dim");
+        allHi[i].classList.add("lit");
+      }
+    }
+    setWireActive(wid, true);
+  }
+
+  function showWireTooltip(label, x, y) {
+    if (!wireTooltip) return;
+    wireTooltip.textContent = label;
+    wireTooltip.style.left = x + "px";
+    wireTooltip.style.top  = y + "px";
+    wireTooltip.classList.add("show");
+    wireTooltip.setAttribute("aria-hidden", "false");
+  }
+  function moveWireTooltip(x, y) {
+    if (!wireTooltip) return;
+    wireTooltip.style.left = x + "px";
+    wireTooltip.style.top  = y + "px";
+  }
+  function hideWireTooltip() {
+    if (!wireTooltip) return;
+    wireTooltip.classList.remove("show");
+    wireTooltip.setAttribute("aria-hidden", "true");
+  }
+
+  function onWireEnter(wid, e) {
+    hoverWire = wid;
+    if (stickyWire) return;            // sticky takes precedence
+    applyActiveWire(wid);
+    var meta = wireMeta[wid];
+    if (meta) showWireTooltip(meta.label, e.clientX, e.clientY);
+  }
+  function onWireMove(e) {
+    if (stickyWire) return;
+    moveWireTooltip(e.clientX, e.clientY);
+  }
+  function onWireLeave() {
+    hoverWire = null;
+    if (stickyWire) return;
+    clearActiveWire(false);
+  }
+  function onWireClick(wid, e) {
+    e.stopPropagation();
+    if (stickyWire === wid) {
+      stickyWire = null;
+      clearActiveWire(true);
+      return;
+    }
+    stickyWire = wid;
+    clearActiveWire(false);
+    applyActiveWire(wid);
+    var meta = wireMeta[wid];
+    if (meta) showWireTooltip(meta.label, e.clientX, e.clientY);
+  }
+
+  // ---- pin hover/click should also drive wire highlight ----
+  function bindPinWireInteractions() {
+    var pins = document.querySelectorAll('rect.pin-box[data-wire]');
+    for (var i = 0; i < pins.length; i++) {
+      var p = pins[i];
+      var wid = p.getAttribute("data-wire");
+      (function (rect, wireId) {
+        rect.addEventListener("mouseenter", function (e) {
+          hoverWire = wireId;
+          if (stickyWire) return;
+          applyActiveWire(wireId);
+          var meta = wireMeta[wireId];
+          if (meta) showWireTooltip(meta.label, e.clientX, e.clientY);
+        });
+        rect.addEventListener("mousemove", function (e) {
+          if (stickyWire) return;
+          moveWireTooltip(e.clientX, e.clientY);
+        });
+        rect.addEventListener("mouseleave", function () {
+          if (stickyWire) return;
+          hoverWire = null;
+          clearActiveWire(false);
+        });
+        rect.addEventListener("click", function (e) {
+          // The existing role-based flash handler also fires on click for same rect.
+          // We additionally toggle the per-wire sticky here.
+          e.stopPropagation();
+          if (stickyWire === wireId) {
+            stickyWire = null;
+            clearActiveWire(true);
+          } else {
+            stickyWire = wireId;
+            clearActiveWire(false);
+            applyActiveWire(wireId);
+            var meta = wireMeta[wireId];
+            if (meta) showWireTooltip(meta.label, e.clientX, e.clientY);
+          }
+        });
+      })(p, wid);
+    }
+  }
+
+  // initial build + layout
+  buildWires();
+  bindPinWireInteractions();
+  // Layout once the SVGs have rendered (next frame ensures bounding boxes are stable).
+  window.requestAnimationFrame(function () {
+    layoutWires();
+    // run once more shortly after to catch font / image settle
+    setTimeout(layoutWires, 120);
+  });
+
+  // resize handling (debounced 100ms)
+  window.addEventListener("resize", scheduleRelayout);
+  // also recompute if scroll/zoom changes (less critical but cheap)
+  window.addEventListener("orientationchange", scheduleRelayout);
 })();
 </script>
 </body>

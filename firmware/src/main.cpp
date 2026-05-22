@@ -33,10 +33,12 @@
 #include "secrets.h"
 
 // --- Pin map (see docs/overview.html for the cross-reference to NodeMCU labels) ---
-constexpr uint8_t  PIN_SPI_CS     = 16;  // D0   software CS for MCP3008
-constexpr uint8_t  PIN_SPI_CLK    = 14;  // D5   HSPI CLK
-constexpr uint8_t  PIN_SPI_MISO   = 12;  // D6   HSPI MISO
-constexpr uint8_t  PIN_SPI_MOSI   = 13;  // D7   HSPI MOSI
+// Note: the ESP8266 Arduino core's pins_arduino.h already #defines PIN_SPI_MISO /
+// PIN_SPI_MOSI as macros, so we use PIN_MCP_* to avoid the collision.
+constexpr uint8_t  PIN_MCP_CS     = 16;  // D0   software CS for MCP3008
+constexpr uint8_t  PIN_MCP_CLK    = 14;  // D5   HSPI CLK
+constexpr uint8_t  PIN_MCP_MISO   = 12;  // D6   HSPI MISO
+constexpr uint8_t  PIN_MCP_MOSI   = 13;  // D7   HSPI MOSI
 constexpr uint8_t  PIN_SENSOR_PWR = 4;   // D2   active-LOW, gate idles HIGH = sensors off
 constexpr uint8_t  PIN_PUMP       = 5;   // D1   active-LOW relay, idles HIGH = pump off
 
@@ -101,11 +103,11 @@ float voltageToPercent(float v, float vDry, float vWet) {
 // Single-ended read of one channel via SPI.
 uint16_t readMCP3008(uint8_t channel) {
     SPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE0));
-    digitalWrite(PIN_SPI_CS, LOW);
+    digitalWrite(PIN_MCP_CS, LOW);
     SPI.transfer(0x01);                              // start bit
     uint8_t hi = SPI.transfer((0x08 | (channel & 0x07)) << 4);  // SGL/DIFF + channel
     uint8_t lo = SPI.transfer(0x00);
-    digitalWrite(PIN_SPI_CS, HIGH);
+    digitalWrite(PIN_MCP_CS, HIGH);
     SPI.endTransaction();
     return ((hi & 0x03) << 8) | lo;
 }
@@ -301,10 +303,10 @@ void setup() {
     // 1. Make sure active-LOW outputs idle HIGH BEFORE pinMode(OUTPUT) drives them.
     digitalWrite(PIN_SENSOR_PWR, HIGH);
     digitalWrite(PIN_PUMP,       HIGH);
-    digitalWrite(PIN_SPI_CS,     HIGH);
+    digitalWrite(PIN_MCP_CS,     HIGH);
     pinMode(PIN_SENSOR_PWR, OUTPUT);
     pinMode(PIN_PUMP,       OUTPUT);
-    pinMode(PIN_SPI_CS,     OUTPUT);
+    pinMode(PIN_MCP_CS,     OUTPUT);
 
     Serial.begin(115200);
     delay(200);

@@ -116,6 +116,7 @@
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 <script>
 (async function () {
   const $ = (id) => document.getElementById(id);
@@ -169,6 +170,11 @@
     r._watered = (r.watered === 'true' || r.watered === '1');
     r._pumpSec = parseFloat(r.pump_seconds);
   }
+  // Drop synthetic rows that should not influence the dashboard summary.
+  // (e.g. one-off CI smoke tests like the row written by `gh api dispatches`
+  // during initial bring-up.)
+  const filtered = rows.filter(r => !(r.device || '').startsWith('smoke'));
+  rows.length = 0; Array.prototype.push.apply(rows, filtered);
   rows.sort((a, b) => a._ts - b._ts);
 
   meta.textContent = `${rows.length} readings · last update ${rows[rows.length-1]._ts.toISOString()}`;
@@ -242,8 +248,6 @@
 
   $('windowSel').addEventListener('change', render);
   $('seriesSel').addEventListener('change', render);
-  // Load Chart.js time adapter via CDN (date-fns adapter)
-  await import('https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/+esm');
   render();
 })();
 </script>

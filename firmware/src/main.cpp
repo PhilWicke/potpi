@@ -267,15 +267,16 @@ bool postReading(const Reading& r, bool watered, float pumpSeconds) {
     JsonDocument doc;
     doc["event_type"] = "potpi-reading";
     JsonObject p = doc["client_payload"].to<JsonObject>();
+    // NOTE: GitHub repository_dispatch limits client_payload to <= 10 top-level
+    // properties. We send 8 here. `valid` is recomputed in the workflow from
+    // the voltage range; `mac` is omitted (single-device deployment for now).
     p["ts"]      = ts;
     p["device"]  = DEVICE_ID;
-    p["mac"]     = WiFi.macAddress();
     p["v0"]      = serialized(String(r.ch0_voltage, 4));
     p["v1"]      = serialized(String(r.ch1_voltage, 4));
     p["p0"]      = serialized(String(r.ch0_percent, 1));
     p["p1"]      = serialized(String(r.ch1_percent, 1));
     p["pAgg"]    = serialized(String(r.agg_percent, 1));
-    p["valid"]   = r.valid;
     p["watered"] = watered;
     p["pumpSeconds"] = serialized(String(pumpSeconds, 2));
 

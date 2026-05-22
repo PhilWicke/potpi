@@ -35,25 +35,28 @@ jobs:
           p0=$(jq -r '.p0'      <<< "$PAYLOAD")
           p1=$(jq -r '.p1'      <<< "$PAYLOAD")
           pAgg=$(jq -r '.pAgg'  <<< "$PAYLOAD")
-          valid=$(jq -r '.valid' <<< "$PAYLOAD")
           watered=$(jq -r '.watered' <<< "$PAYLOAD")
           pumpSeconds=$(jq -r '.pumpSeconds' <<< "$PAYLOAD")
           device=$(jq -r '.device' <<< "$PAYLOAD")
-          mac=$(jq -r '.mac'    <<< "$PAYLOAD")
 
           # Fallback to current UTC time if dispatcher didn't send one
           if [ -z "$ts" ] || [ "$ts" = "null" ]; then
             ts=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
           fi
 
+          # Derive validity flag from voltage range (was sent explicitly before;
+          # dropped to stay under GitHub's 10-property dispatch limit).
+          valid=$(jq -n --argjson v0 "$v0" --argjson v1 "$v1" \
+            '($v0 >= 0.1 and $v0 <= 3.2) or ($v1 >= 0.1 and $v1 <= 3.2)')
+
           date_part=$(echo "$ts" | cut -c1-10)
           mkdir -p data
           file="data/${date_part}.csv"
 
           if [ ! -f "$file" ]; then
-            echo "timestamp,voltage_ch0,voltage_ch1,percent_ch0,percent_ch1,percent_mean,valid,watered,pump_seconds,device,mac" > "$file"
+            echo "timestamp,voltage_ch0,voltage_ch1,percent_ch0,percent_ch1,percent_mean,valid,watered,pump_seconds,device" > "$file"
           fi
-          echo "${ts},${v0},${v1},${p0},${p1},${pAgg},${valid},${watered},${pumpSeconds},${device},${mac}" >> "$file"
+          echo "${ts},${v0},${v1},${p0},${p1},${pAgg},${valid},${watered},${pumpSeconds},${device}" >> "$file"
 
           # Maintain data/index.json — sorted list of CSV files the dashboard reads.
           # Avoids the dashboard having to use the GitHub API (rate-limited for anonymous).

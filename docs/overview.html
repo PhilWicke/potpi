@@ -1,0 +1,1463 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>PotPi-ESP — Hardware Migration Reference</title>
+<style>
+  :root {
+    --bg: #fafaf7;
+    --panel: #ffffff;
+    --panel-alt: #f4f3ee;
+    --ink: #1a1a1a;
+    --ink-soft: #4a4a4a;
+    --ink-faint: #777;
+    --line: #e3e0d8;
+    --line-strong: #c9c4b8;
+    --accent-a: #2b6cb0;
+    --accent-a-bg: #e7f0fa;
+    --accent-b: #2f855a;
+    --accent-b-bg: #e6f3eb;
+    --warn: #b7791f;
+    --warn-bg: #fdf3df;
+    --danger: #b03030;
+    --danger-bg: #fae5e2;
+    --neutral: #555;
+    --code-bg: #f1efe8;
+    --shadow: 0 1px 2px rgba(20, 20, 20, 0.04), 0 4px 14px rgba(20, 20, 20, 0.05);
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+                 Arial, "Liberation Sans", sans-serif;
+    font-size: 15px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  .container {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 28px 22px 96px;
+  }
+  header.hero {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 14px 22px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 18px;
+    margin-bottom: 22px;
+  }
+  header.hero h1 {
+    margin: 0;
+    font-size: 26px;
+    letter-spacing: -0.01em;
+  }
+  header.hero .sub {
+    color: var(--ink-faint);
+    font-size: 14px;
+  }
+  header.hero .meta {
+    margin-left: auto;
+    color: var(--ink-faint);
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+  }
+  h2 {
+    margin: 28px 0 12px;
+    font-size: 19px;
+    letter-spacing: -0.005em;
+  }
+  h3 {
+    margin: 18px 0 8px;
+    font-size: 16px;
+    color: var(--ink-soft);
+    text-transform: none;
+    font-weight: 600;
+  }
+  p { margin: 0 0 10px; }
+  a { color: var(--accent-a); }
+  code, kbd, .mono {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+                 "Liberation Mono", "Courier New", monospace;
+    font-size: 0.92em;
+  }
+  code {
+    background: var(--code-bg);
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+
+  /* ===== Mode toggle ===== */
+  .modes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    background: var(--panel-alt);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 5px;
+    margin-bottom: 16px;
+    width: fit-content;
+  }
+  .modes button {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    padding: 8px 16px;
+    font: inherit;
+    color: var(--ink-soft);
+    border-radius: 7px;
+    cursor: pointer;
+    transition: background 120ms ease, color 120ms ease;
+  }
+  .modes button:hover { color: var(--ink); }
+  .modes button[aria-pressed="true"] {
+    background: var(--panel);
+    color: var(--ink);
+    box-shadow: var(--shadow);
+  }
+
+  /* ===== Setup panels layout ===== */
+  .setups {
+    display: grid;
+    gap: 20px;
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+  }
+  .setups.single-a .panel-b,
+  .setups.single-b .panel-a { display: none; }
+  .setups.single-a, .setups.single-b { grid-template-columns: 1fr; }
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 18px 18px 16px;
+    box-shadow: var(--shadow);
+  }
+  .panel header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 10px;
+    margin-bottom: 12px;
+  }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    line-height: 1.6;
+  }
+  .badge.a { background: var(--accent-a-bg); color: var(--accent-a); }
+  .badge.b { background: var(--accent-b-bg); color: var(--accent-b); }
+  .badge.status-working { background: var(--accent-b-bg); color: var(--accent-b); }
+  .badge.status-planned { background: var(--accent-a-bg); color: var(--accent-a); }
+  .badge.warn { background: var(--warn-bg); color: var(--warn); }
+  .badge.danger { background: var(--danger-bg); color: var(--danger); }
+  .badge.neutral { background: #ececea; color: var(--neutral); }
+  .panel h2 { margin: 0; font-size: 18px; }
+  .panel .meta-line {
+    width: 100%;
+    color: var(--ink-faint);
+    font-size: 13px;
+    margin-top: 2px;
+  }
+
+  /* ===== Tables ===== */
+  .table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    margin: 6px 0 4px;
+  }
+  table.pins {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+  }
+  table.pins th, table.pins td {
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  table.pins th {
+    background: var(--panel-alt);
+    font-weight: 600;
+    color: var(--ink-soft);
+    position: sticky;
+    top: 0;
+    font-size: 12.5px;
+    letter-spacing: 0.02em;
+  }
+  table.pins tr:last-child td { border-bottom: 0; }
+  table.pins tr.hl-active-low td { background: #fffbf2; }
+  table.pins tr.hl-bootstrap td { background: #fff5f3; }
+  table.pins tr.hl-broken td { background: #f7e9e7; color: var(--ink-soft); }
+  table.pins tr.hl-removed td { color: var(--ink-faint); text-decoration: line-through; }
+  table.pins td.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace; }
+  table.pins .pin-num { color: var(--ink-faint); font-variant-numeric: tabular-nums; }
+
+  /* ===== Notes / callouts ===== */
+  .notes { margin: 6px 0 0; }
+  .note {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-size: 13.5px;
+    margin: 6px 0;
+    border: 1px solid transparent;
+  }
+  .note .tag {
+    flex: 0 0 auto;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 1px 7px;
+    border-radius: 4px;
+    margin-top: 1px;
+  }
+  .note.warn { background: var(--warn-bg); border-color: #ecd9a3; }
+  .note.warn .tag { background: var(--warn); color: white; }
+  .note.danger { background: var(--danger-bg); border-color: #eec3bd; }
+  .note.danger .tag { background: var(--danger); color: white; }
+  .note.info { background: var(--accent-a-bg); border-color: #c8dcef; }
+  .note.info .tag { background: var(--accent-a); color: white; }
+  .note.ok { background: var(--accent-b-bg); border-color: #c4dfcc; }
+  .note.ok .tag { background: var(--accent-b); color: white; }
+
+  /* ===== Sub-sections inside a panel ===== */
+  .subsec {
+    border-top: 1px dashed var(--line);
+    margin-top: 14px;
+    padding-top: 10px;
+  }
+  .subsec:first-of-type { border-top: 0; padding-top: 0; margin-top: 0; }
+  .kv {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 4px 14px;
+    font-size: 13.5px;
+  }
+  .kv dt { color: var(--ink-faint); }
+  .kv dd { margin: 0; }
+
+  ul.bullet { padding-left: 18px; margin: 6px 0; }
+  ul.bullet li { margin: 3px 0; }
+
+  /* ===== Diff section ===== */
+  .diff {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin-top: 8px;
+  }
+  .diff .card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 14px 16px;
+    box-shadow: var(--shadow);
+  }
+  .diff .card h3 {
+    margin-top: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .diff .stays h3::before {
+    content: "=";
+    display: inline-block;
+    color: var(--accent-b);
+    background: var(--accent-b-bg);
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 22px;
+    font-weight: 700;
+    font-size: 13px;
+  }
+  .diff .changes h3::before {
+    content: "\2192";
+    display: inline-block;
+    color: var(--accent-a);
+    background: var(--accent-a-bg);
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 22px;
+    font-weight: 700;
+    font-size: 13px;
+  }
+  .diff ul { padding-left: 18px; margin: 6px 0; }
+  .diff li { margin: 4px 0; }
+
+  /* ===== Labels checklist ===== */
+  .labels {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 16px 18px;
+    box-shadow: var(--shadow);
+  }
+  .labels-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 8px 14px;
+    margin-top: 8px;
+  }
+  .labels-grid label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    background: var(--panel-alt);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 100ms ease;
+  }
+  .labels-grid label:hover { background: #ecebe4; }
+  .labels-grid input[type="checkbox"] {
+    width: 16px; height: 16px;
+    accent-color: var(--accent-b);
+  }
+  .labels-grid input[type="checkbox"]:checked + .lbl {
+    text-decoration: line-through;
+    color: var(--ink-faint);
+  }
+  .lbl { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace; font-size: 13px; }
+  .lbl small {
+    display: block;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: var(--ink-faint);
+    font-size: 11.5px;
+    font-weight: 400;
+  }
+  .progress {
+    margin-top: 10px;
+    height: 6px;
+    background: var(--panel-alt);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .progress > div {
+    height: 100%;
+    width: 0%;
+    background: var(--accent-b);
+    transition: width 200ms ease;
+  }
+  .labels-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 6px;
+    font-size: 12.5px;
+    color: var(--ink-faint);
+  }
+  .labels-meta button {
+    appearance: none;
+    border: 1px solid var(--line-strong);
+    background: var(--panel);
+    color: var(--ink-soft);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font: inherit;
+    font-size: 12.5px;
+    cursor: pointer;
+  }
+  .labels-meta button:hover { background: var(--panel-alt); }
+
+  /* ===== Footer ===== */
+  footer.foot {
+    margin-top: 36px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+    color: var(--ink-faint);
+    font-size: 12.5px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 18px;
+  }
+
+  /* ===== Responsive ===== */
+  @media (max-width: 900px) {
+    .setups { grid-template-columns: 1fr; }
+    .diff { grid-template-columns: 1fr; }
+    header.hero .meta { margin-left: 0; width: 100%; }
+  }
+  @media (max-width: 520px) {
+    .container { padding: 18px 14px 60px; }
+    header.hero h1 { font-size: 22px; }
+    .panel { padding: 14px; }
+    .labels-grid { grid-template-columns: 1fr; }
+    .diagram svg { max-height: 720px; }
+  }
+
+  /* ===== Print ===== */
+  @media print {
+    body { background: white; }
+    .modes, .labels-meta button { display: none !important; }
+    .setups { grid-template-columns: 1fr 1fr !important; }
+    .setups.single-a .panel-b, .setups.single-b .panel-a { display: block !important; }
+    .panel, .diff .card, .labels { box-shadow: none; break-inside: avoid; }
+  }
+
+  /* Tiny coloured pin chip */
+  .chip {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 3px;
+    background: var(--code-bg);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+    font-size: 12.5px;
+    line-height: 1.5;
+    white-space: nowrap;
+  }
+  .chip.power { background: #fdecea; color: #a02a1f; }
+  .chip.gnd { background: #ececea; color: #333; }
+  .chip.spi { background: #e7f0fa; color: #2b6cb0; }
+  .chip.i2c { background: #f0e7fa; color: #5a2bb0; }
+  .chip.ctrl { background: #fff3df; color: #885600; }
+  .chip.boot { background: #fae5e2; color: #b03030; }
+
+  /* ===== Pin diagrams (SVG) ===== */
+  .diagram {
+    margin: 6px 0 12px;
+    background: var(--panel-alt);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 12px 12px 10px;
+  }
+  .diagram-title {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+  .diagram-title h4 {
+    margin: 0;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    letter-spacing: 0.01em;
+  }
+  .diagram-title .hint {
+    font-size: 11.5px;
+    color: var(--ink-faint);
+  }
+  .diagram svg {
+    width: 100%;
+    height: auto;
+    display: block;
+    max-height: 560px;
+  }
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 10px;
+    margin-top: 8px;
+    font-size: 11.5px;
+    color: var(--ink-soft);
+  }
+  .legend .sw {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .legend .swatch {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    border: 1px solid rgba(0,0,0,0.12);
+    vertical-align: middle;
+  }
+  /* shared role palette — used by both SVG diagrams and the legend */
+  .swatch.role-spi    { background: #c9deef; border-color: #6aa6d8; }
+  .swatch.role-cs     { background: #c8e0f7; border-color: #4d8ec9; }
+  .swatch.role-sensor { background: #fbe6a6; border-color: #d8b04a; }
+  .swatch.role-pump   { background: #f3c2bb; border-color: #c87266; }
+  .swatch.role-power  { background: #c9e6cf; border-color: #6cb085; }
+  .swatch.role-gnd    { background: #d8d6cf; border-color: #9d9b91; }
+  .swatch.role-strap  { background: #fbd9c4; border-color: #d68a55; }
+
+  /* SVG pin styling */
+  svg .pin-box {
+    fill: #ffffff;
+    stroke: var(--line-strong);
+    stroke-width: 1;
+    cursor: default;
+  }
+  svg .pin-box.role-spi    { fill: #c9deef; stroke: #6aa6d8; cursor: pointer; }
+  svg .pin-box.role-cs     { fill: #c8e0f7; stroke: #4d8ec9; cursor: pointer; }
+  svg .pin-box.role-sensor { fill: #fbe6a6; stroke: #d8b04a; cursor: pointer; }
+  svg .pin-box.role-pump   { fill: #f3c2bb; stroke: #c87266; cursor: pointer; }
+  svg .pin-box.role-power  { fill: #c9e6cf; stroke: #6cb085; cursor: pointer; }
+  svg .pin-box.role-gnd    { fill: #d8d6cf; stroke: #9d9b91; cursor: pointer; }
+  svg .pin-box.is-strap    { stroke: #d68a55; stroke-width: 1.5; stroke-dasharray: 3 2; }
+  svg .pin-box.is-strap.role-none { fill: #fbe7d7; }
+  svg .pin-box.flash { stroke-width: 2; filter: drop-shadow(0 0 4px rgba(80,80,80,0.45)); }
+  svg .pin-label {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+    font-size: 10px;
+    fill: var(--ink);
+    pointer-events: none;
+  }
+  svg .pin-gpio {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+    font-size: 8.5px;
+    fill: var(--ink-faint);
+    pointer-events: none;
+  }
+  svg .pin-tag {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 9px;
+    fill: var(--ink-soft);
+    pointer-events: none;
+  }
+  svg .pin-tag.strap-tag { fill: #8a4416; font-style: italic; }
+  svg .pin-num-circle {
+    fill: #ffffff;
+    stroke: var(--line-strong);
+    stroke-width: 0.75;
+  }
+  svg .pin-num-text {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+    font-size: 7.5px;
+    fill: var(--ink-faint);
+    pointer-events: none;
+  }
+  svg .board-outline {
+    fill: #fdfcf7;
+    stroke: var(--line-strong);
+    stroke-width: 1;
+  }
+  svg .usb-block { fill: #b7b1a0; stroke: #87826f; stroke-width: 1; }
+  svg .silk { fill: var(--ink-faint); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 10px; }
+  svg .silk-small { fill: var(--ink-faint); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 8.5px; }
+  svg .pin1-marker { fill: #b03030; }
+
+  .pin-tooltip {
+    position: fixed;
+    pointer-events: none;
+    background: var(--ink);
+    color: #ffffff;
+    padding: 5px 8px;
+    border-radius: 5px;
+    font-size: 12px;
+    line-height: 1.4;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.25);
+    transform: translate(-50%, calc(-100% - 8px));
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 100ms ease;
+    z-index: 1000;
+    max-width: 260px;
+    white-space: normal;
+  }
+  .pin-tooltip.show { opacity: 1; }
+  .pin-tooltip .ttn { font-weight: 600; }
+  .pin-tooltip .ttr { color: #d8d5cd; font-size: 11px; margin-top: 2px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header class="hero">
+  <div>
+    <h1>PotPi-ESP — Hardware Migration Reference</h1>
+    <div class="sub">Single-page wiring + GPIO crib sheet. Pi 3B (working) &rarr; NodeMCU ESP8266 (target).</div>
+  </div>
+  <div class="meta">Keep open while rewiring</div>
+</header>
+
+<div class="modes" role="tablist" aria-label="View mode">
+  <button data-mode="both" aria-pressed="true">Side-by-side</button>
+  <button data-mode="a" aria-pressed="false">Setup A — Pi only</button>
+  <button data-mode="b" aria-pressed="false">Setup B — ESP only</button>
+</div>
+
+<section class="setups" id="setups">
+
+  <!-- ============== SETUP A — Raspberry Pi ============== -->
+  <article class="panel panel-a" id="panel-a">
+    <header>
+      <span class="badge a">Setup A</span>
+      <h2>Raspberry Pi 3B</h2>
+      <span class="badge status-working">working</span>
+      <span class="badge warn">marginal PSU</span>
+      <div class="meta-line">
+        Raspbian 11 (bullseye) &middot; kernel 6.1.21-v7+ &middot; MAC ...:78:b1:eb
+      </div>
+    </header>
+
+    <div class="subsec">
+      <h3>Board summary</h3>
+      <dl class="kv">
+        <dt>Board</dt><dd>Raspberry Pi 3 Model B Rev 1.2</dd>
+        <dt>OS</dt><dd>Raspbian 11 (bullseye)</dd>
+        <dt>Kernel</dt><dd><span class="mono">6.1.21-v7+</span></dd>
+        <dt>MAC</dt><dd><span class="mono">...:78:b1:eb</span></dd>
+        <dt>GPIO scheme</dt><dd>BCM numbering throughout</dd>
+      </dl>
+      <div class="note danger" role="note">
+        <span class="tag">PSU</span>
+        <div>
+          <code>vcgencmd get_throttled</code> returns <code>0x50000</code> &mdash;
+          under-voltage <em>and</em> throttling have both occurred since boot.
+          Treat the supply as marginal; high pump current will brown the SoC.
+        </div>
+      </div>
+    </div>
+
+    <div class="subsec">
+      <h3>GPIO &amp; pin mapping <span class="badge neutral" style="font-weight:500">BCM</span></h3>
+
+      <div class="diagram" aria-label="Raspberry Pi 3B 40-pin header diagram">
+        <div class="diagram-title">
+          <h4>40-pin header (looking down at the board, pin 1 marked)</h4>
+          <span class="hint">hover for role &middot; click to cross-highlight</span>
+        </div>
+        <svg viewBox="0 0 460 540" role="img" aria-label="Raspberry Pi 40-pin header"
+             xmlns="http://www.w3.org/2000/svg" data-diagram="pi">
+          <!-- header outline -->
+          <rect class="board-outline" x="60" y="22" width="340" height="498" rx="6" />
+          <text class="silk" x="230" y="14" text-anchor="middle">Raspberry Pi 3B &mdash; 40-pin header</text>
+          <text class="silk-small" x="230" y="535" text-anchor="middle">odd pins (1, 3, 5 &hellip;) on the left &middot; even pins (2, 4, 6 &hellip;) on the right</text>
+
+          <!-- pin 1 marker -->
+          <polygon class="pin1-marker" points="78,30 88,30 83,40" />
+          <text class="silk-small" x="92" y="36" fill="#b03030">PIN 1</text>
+
+          <g id="pi-pins"></g>
+        </svg>
+        <div class="legend" aria-label="Wire role legend">
+          <span class="sw"><span class="swatch role-spi"></span>SPI (SCLK/MISO/MOSI)</span>
+          <span class="sw"><span class="swatch role-cs"></span>SPI CS</span>
+          <span class="sw"><span class="swatch role-sensor"></span>Sensor power gate</span>
+          <span class="sw"><span class="swatch role-pump"></span>Pump relay</span>
+          <span class="sw"><span class="swatch role-power"></span>Power (3V3 / 5V)</span>
+          <span class="sw"><span class="swatch role-gnd"></span>Ground</span>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="pins" aria-label="Raspberry Pi GPIO mapping">
+          <thead>
+            <tr>
+              <th>Component</th>
+              <th>Pi header pin</th>
+              <th>GPIO (BCM)</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>MCP3008 ADC &mdash; SCLK</td>
+              <td class="pin-num">pin 23</td>
+              <td><span class="chip spi">GPIO 11</span></td>
+              <td>SPI0 hardware</td>
+            </tr>
+            <tr>
+              <td>MCP3008 ADC &mdash; MISO</td>
+              <td class="pin-num">pin 21</td>
+              <td><span class="chip spi">GPIO 9</span></td>
+              <td>SPI0 hardware</td>
+            </tr>
+            <tr>
+              <td>MCP3008 ADC &mdash; MOSI</td>
+              <td class="pin-num">pin 19</td>
+              <td><span class="chip spi">GPIO 10</span></td>
+              <td>SPI0 hardware</td>
+            </tr>
+            <tr>
+              <td>MCP3008 ADC &mdash; CS (software)</td>
+              <td class="pin-num">pin 29</td>
+              <td><span class="chip ctrl">GPIO 5</span></td>
+              <td>controlled via <code>digitalio.DigitalInOut(board.D5)</code></td>
+            </tr>
+            <tr>
+              <td>MCP3008 VDD + VREF</td>
+              <td class="pin-num">pin 1 or 17</td>
+              <td><span class="chip power">3V3</span></td>
+              <td>tie VDD and VREF together</td>
+            </tr>
+            <tr>
+              <td>MCP3008 DGND + AGND</td>
+              <td class="pin-num">any GND</td>
+              <td><span class="chip gnd">GND</span></td>
+              <td>both grounds bonded</td>
+            </tr>
+            <tr class="hl-active-low">
+              <td>Sensor power gate (transistor base)</td>
+              <td class="pin-num">pin 12</td>
+              <td><span class="chip ctrl">GPIO 18</span></td>
+              <td>active-LOW &mdash; switches 3V3 to capacitive moisture sensors</td>
+            </tr>
+            <tr class="hl-broken hl-active-low">
+              <td>Pump 1 relay (broken &mdash; disabled)</td>
+              <td class="pin-num">pin 7</td>
+              <td><span class="chip ctrl">GPIO 4</span></td>
+              <td>active-LOW; relay K1 coil works, downstream motor unresponsive</td>
+            </tr>
+            <tr class="hl-active-low">
+              <td>Pump 2 relay (working)</td>
+              <td class="pin-num">pin 11</td>
+              <td><span class="chip ctrl">GPIO 17</span></td>
+              <td>active-LOW; relay K2 &rarr; working mini pump</td>
+            </tr>
+            <tr class="hl-removed">
+              <td>OLED display (SSD1306 128&times;64) &mdash; SDA</td>
+              <td class="pin-num">pin 3</td>
+              <td><span class="chip i2c">GPIO 2</span></td>
+              <td>I&sup2;C1 &mdash; being removed for migration</td>
+            </tr>
+            <tr class="hl-removed">
+              <td>OLED display &mdash; SCL</td>
+              <td class="pin-num">pin 5</td>
+              <td><span class="chip i2c">GPIO 3</span></td>
+              <td>I&sup2;C1 &mdash; being removed</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="subsec">
+      <h3>Connected components</h3>
+      <ul class="bullet">
+        <li><strong>MCP3008 ADC</strong> on SPI0. <code>CH0</code> = Sensor 1, <code>CH1</code> = Sensor 2.
+            Both sensors are placed in the same plant pot.</li>
+        <li><strong>4-channel relay module</strong> JQC-3FF-S-Z 5V, active-LOW.
+            <code>IN1</code>&harr;K1&harr;Pump 1, <code>IN2</code>&harr;K2&harr;Pump 2.
+            IN3 and IN4 are unused (IN4 floats LOW so its LED stays lit &mdash; harmless).</li>
+        <li><strong>Pumps</strong>: 9V battery &rarr; through relay NO/COM contacts &rarr; pump motor.
+            Pump 1 is dead downstream of the relay; only Pump 2 actually moves water.</li>
+        <li><strong>SSD1306 OLED</strong> at I&sup2;C <code>0x3C</code>. Severe burn-in
+            from the previous moisture-graph display. <em>Will not be ported.</em></li>
+        <li><strong>Capacitive moisture sensors</strong> powered through a transistor gate so they
+            spend most of their life unpowered (corrosion mitigation + lower idle current).</li>
+      </ul>
+    </div>
+
+    <div class="subsec">
+      <h3>Calibration (in current firmware)</h3>
+      <dl class="kv">
+        <dt>Sensor 1 (CH0)</dt>
+        <dd><code>v_dry = 2.80 V</code>, <code>v_wet = 1.80 V</code> &nbsp;<span class="badge neutral">drier &rarr; higher V</span></dd>
+        <dt>Sensor 2 (CH1)</dt>
+        <dd><code>v_dry = 1.70 V</code>, <code>v_wet = 0.70 V</code></dd>
+      </dl>
+    </div>
+
+    <div class="subsec">
+      <h3>Gotchas</h3>
+      <div class="notes">
+        <div class="note warn"><span class="tag">active-low</span>
+          <div>All control outputs (sensor gate, both relay INs) are active-LOW.
+            Drive HIGH at boot to keep pumps off and sensors unpowered.</div>
+        </div>
+        <div class="note danger"><span class="tag">psu</span>
+          <div>Under-voltage <em>and</em> throttling flags are set
+            (<code>get_throttled = 0x50000</code>). A better PSU or a separate supply
+            for the relay/pumps would be wise before rewiring more current onto this rail.</div>
+        </div>
+        <div class="note info"><span class="tag">spi</span>
+          <div>CS is software-driven on <code>GPIO 5</code>, not the hardware
+            <code>CE0/CE1</code>. Keep that in mind when porting code.</div>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <!-- ============== SETUP B — NodeMCU ESP8266 ============== -->
+  <article class="panel panel-b" id="panel-b">
+    <header>
+      <span class="badge b">Setup B</span>
+      <h2>NodeMCU ESP8266 (Amica v1.0)</h2>
+      <span class="badge status-planned">planned</span>
+      <span class="badge neutral">target board</span>
+      <div class="meta-line">
+        ESP-12 (Ai-Thinker) &middot; 4 MB flash &middot; CP2102 USB-UART &middot; MAC <span class="mono">XX:XX:XX:XX:XX:XX</span>
+      </div>
+    </header>
+
+    <div class="subsec">
+      <h3>Board summary</h3>
+      <dl class="kv">
+        <dt>Board</dt><dd>NodeMCU Amica v1.0</dd>
+        <dt>MCU</dt><dd>ESP8266EX, ESP-12 module by Ai-Thinker</dd>
+        <dt>Flash</dt><dd>4 MB</dd>
+        <dt>USB-UART</dt><dd>genuine Silicon Labs CP2102</dd>
+        <dt>MAC</dt><dd><span class="mono">XX:XX:XX:XX:XX:XX</span></dd>
+      </dl>
+      <div class="note info" role="note">
+        <span class="tag">removed</span>
+        <div>The SSD1306 OLED is <em>not</em> ported; it stays with the Pi for another project.
+        Pump 1 also stays unwired (motor still dead). Only Pump 2 has any control line in this setup.</div>
+      </div>
+    </div>
+
+    <div class="subsec">
+      <h3>GPIO &amp; pin mapping <span class="badge neutral" style="font-weight:500">NodeMCU label / GPIO</span></h3>
+
+      <div class="diagram" aria-label="NodeMCU Amica pinout">
+        <div class="diagram-title">
+          <h4>NodeMCU Amica pinout (USB at the top)</h4>
+          <span class="hint">hover for role &middot; click to cross-highlight</span>
+        </div>
+        <svg viewBox="0 0 460 540" role="img" aria-label="NodeMCU Amica pinout"
+             xmlns="http://www.w3.org/2000/svg" data-diagram="esp">
+          <!-- USB connector -->
+          <rect class="usb-block" x="190" y="6" width="80" height="22" rx="2" />
+          <text class="silk-small" x="230" y="22" text-anchor="middle" fill="#ffffff" stroke="none">USB</text>
+
+          <!-- board -->
+          <rect class="board-outline" x="120" y="34" width="220" height="486" rx="6" />
+          <text class="silk" x="230" y="60" text-anchor="middle">NodeMCU Amica</text>
+          <text class="silk-small" x="230" y="74" text-anchor="middle">ESP-12 module</text>
+
+          <!-- ESP-12 module box -->
+          <rect x="155" y="86" width="150" height="170" rx="4"
+                fill="#e6e3d8" stroke="#9d9b91" stroke-width="1" />
+          <text class="silk-small" x="230" y="172" text-anchor="middle">ESP-12 (Ai-Thinker)</text>
+
+          <!-- onboard LED + buttons silk -->
+          <circle cx="148" cy="276" r="3" fill="#3b76d1" stroke="#1e4a8a" />
+          <text class="silk-small" x="155" y="279">LED (D4 / GPIO2)</text>
+          <rect x="138" y="298" width="22" height="14" rx="2" fill="#cfccc0" stroke="#9d9b91" />
+          <text class="silk-small" x="149" y="308" text-anchor="middle">RST</text>
+          <rect x="300" y="298" width="22" height="14" rx="2" fill="#cfccc0" stroke="#9d9b91" />
+          <text class="silk-small" x="311" y="308" text-anchor="middle">FLASH</text>
+          <text class="silk-small" x="311" y="320" text-anchor="middle">(D3/GPIO0)</text>
+
+          <text class="silk-small" x="230" y="510" text-anchor="middle">A0 is the only analog input (0&ndash;3.3 V via onboard divider)</text>
+
+          <g id="esp-pins"></g>
+        </svg>
+        <div class="legend" aria-label="Wire role legend">
+          <span class="sw"><span class="swatch role-spi"></span>SPI (SCLK/MISO/MOSI)</span>
+          <span class="sw"><span class="swatch role-cs"></span>SPI CS</span>
+          <span class="sw"><span class="swatch role-sensor"></span>Sensor power gate</span>
+          <span class="sw"><span class="swatch role-pump"></span>Pump relay</span>
+          <span class="sw"><span class="swatch role-power"></span>Power (3V3 / 5V)</span>
+          <span class="sw"><span class="swatch role-gnd"></span>Ground</span>
+          <span class="sw"><span class="swatch role-strap"></span>Strapping pin (avoid for outputs that can float low)</span>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="pins" aria-label="ESP8266 GPIO mapping">
+          <thead>
+            <tr>
+              <th>Component</th>
+              <th>NodeMCU label</th>
+              <th>ESP8266 GPIO</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>MCP3008 &mdash; SCLK</td>
+              <td class="pin-num">D5</td>
+              <td><span class="chip spi">GPIO 14</span></td>
+              <td>HSPI hardware</td>
+            </tr>
+            <tr>
+              <td>MCP3008 &mdash; MISO</td>
+              <td class="pin-num">D6</td>
+              <td><span class="chip spi">GPIO 12</span></td>
+              <td>HSPI hardware</td>
+            </tr>
+            <tr>
+              <td>MCP3008 &mdash; MOSI</td>
+              <td class="pin-num">D7</td>
+              <td><span class="chip spi">GPIO 13</span></td>
+              <td>HSPI hardware</td>
+            </tr>
+            <tr>
+              <td>MCP3008 &mdash; CS</td>
+              <td class="pin-num">D0</td>
+              <td><span class="chip ctrl">GPIO 16</span></td>
+              <td>software CS, idles HIGH; <em>no interrupts, no PWM</em>, safe for CS</td>
+            </tr>
+            <tr>
+              <td>MCP3008 VDD + VREF</td>
+              <td class="pin-num">3V3</td>
+              <td><span class="chip power">3V3</span></td>
+              <td>tie VDD and VREF together</td>
+            </tr>
+            <tr>
+              <td>MCP3008 DGND + AGND</td>
+              <td class="pin-num">GND</td>
+              <td><span class="chip gnd">GND</span></td>
+              <td>both grounds bonded</td>
+            </tr>
+            <tr class="hl-active-low">
+              <td>Sensor power gate</td>
+              <td class="pin-num">D2</td>
+              <td><span class="chip ctrl">GPIO 4</span></td>
+              <td>active-LOW; moved off bootstrap pin &mdash; gate idles HIGH (sensors off) at boot</td>
+            </tr>
+            <tr class="hl-active-low">
+              <td>Pump 2 relay (IN2 on relay)</td>
+              <td class="pin-num">D1</td>
+              <td><span class="chip ctrl">GPIO 5</span></td>
+              <td>active-LOW; moved off bootstrap pin &mdash; idles HIGH (pump off) at boot</td>
+            </tr>
+            <tr>
+              <td>Relay V<sub>CC</sub> (5V coil)</td>
+              <td class="pin-num">Vin</td>
+              <td><span class="chip power">+5V</span></td>
+              <td>5V from USB pass-through</td>
+            </tr>
+            <tr>
+              <td>Relay GND</td>
+              <td class="pin-num">GND</td>
+              <td><span class="chip gnd">GND</span></td>
+              <td>common with MCU ground</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="subsec">
+      <h3>Free pins (for later)</h3>
+      <ul class="bullet">
+        <li><span class="chip">D3</span> &mdash; GPIO 0, <strong>strapping pin</strong>; tied to FLASH button.
+          Leave alone unless you have a specific input use and an external pull-up.</li>
+        <li><span class="chip">D4</span> &mdash; GPIO 2, <strong>strapping pin</strong>; shares the onboard
+          blue LED. Usable as an output if you accept a brief blink at boot.</li>
+        <li><span class="chip">D8</span> &mdash; GPIO 15, also a <strong>strapping pin</strong>
+          (must idle LOW); usable as plain output if you mind the boot behaviour.</li>
+        <li><span class="chip">A0</span> &mdash; the only analog input, 0&ndash;3.3 V via the onboard
+          voltage divider. Free in this build (MCP3008 handles the actual sensor reads).</li>
+        <li><span class="chip">RX</span> / <span class="chip">TX</span> &mdash; used for serial debug.</li>
+      </ul>
+    </div>
+
+    <div class="subsec">
+      <h3>New firmware (what the ESP will do)</h3>
+      <ul class="bullet">
+        <li>Read the MCP3008 with <strong>pulsed sampling (median-of-medians)</strong> &mdash;
+            same robustness pattern as the Pi&rsquo;s <code>PotPi v2</code>.</li>
+        <li>Persist readings to <strong>LittleFS</strong> on the ESP&rsquo;s 4 MB flash.</li>
+        <li>Connect to a fixed WiFi network.</li>
+        <li>Push daily CSV files to a GitHub repo via the <strong>Contents API</strong>
+            (HTTPS PUT).</li>
+        <li>A <strong>GitHub Pages</strong> site in the same repo renders the data using
+            <strong>Chart.js</strong>.</li>
+      </ul>
+    </div>
+
+    <div class="subsec">
+      <h3>Gotchas</h3>
+      <div class="notes">
+        <div class="note danger"><span class="tag">strapping pins</span>
+          <div><code>GPIO 0</code> (D3), <code>GPIO 2</code> (D4) and <code>GPIO 15</code> (D8)
+            are <strong>strapping pins</strong> &mdash; their levels are sampled during the
+            ~150&nbsp;ms boot window to choose boot mode. If a load (the relay&rsquo;s opto-input
+            or the sensor-power transistor) holds them at the wrong level at reset, the chip
+            can boot into UART download mode instead of running our firmware, or the relay
+            can twitch on every power-up. <strong>Our outputs have been moved off these pins</strong>
+            (sensor gate &rarr; <code>D2 / GPIO 4</code>, pump relay &rarr; <code>D1 / GPIO 5</code>).</div>
+        </div>
+        <div class="note warn"><span class="tag">pull-up</span>
+          <div>Add an <strong>external 10&nbsp;k&Omega; pull-up</strong> from the relay
+            <code>IN</code> line to <code>3V3</code> so the line is guaranteed HIGH
+            (relay OFF) before our firmware sets the pin as output. A second 10&nbsp;k&Omega;
+            pull-up on the sensor-gate line is recommended for the same reason.</div>
+        </div>
+        <div class="note warn"><span class="tag">active-low</span>
+          <div>Sensor gate and relay IN2 are both active-LOW. Initialise GPIOs HIGH
+            <em>before</em> setting them as outputs to avoid a momentary pulse.</div>
+        </div>
+        <div class="note info"><span class="tag">d0 / gpio 16</span>
+          <div>GPIO 16 has no interrupt and no PWM, and it&rsquo;s on a different silicon
+            block. Plain digital output (CS) is fine; don&rsquo;t pick it for anything
+            time-sensitive.</div>
+        </div>
+        <div class="note info"><span class="tag">power</span>
+          <div>Pump still runs from the 9V battery via the relay contacts; the relay coil
+            takes 5V from <code>Vin</code> (USB). Do <strong>not</strong> feed the pump rail
+            into the MCU&rsquo;s 3V3.</div>
+        </div>
+      </div>
+    </div>
+  </article>
+
+</section>
+
+<!-- ============== DIFF ============== -->
+<h2>What changes, what stays</h2>
+<div class="diff">
+  <div class="card stays">
+    <h3>Stays the same</h3>
+    <ul>
+      <li><strong>MCP3008 ADC</strong> &mdash; same chip, same SPI mode, same channel assignment
+        (<code>CH0</code> = Sensor 1, <code>CH1</code> = Sensor 2).</li>
+      <li><strong>Capacitive moisture sensors</strong> &mdash; same pair, same pot,
+        same calibration constants carry over (re-verify after rewiring).</li>
+      <li><strong>Pump 2 + mini-pump motor</strong> &mdash; unchanged.</li>
+      <li><strong>9V battery</strong> as the pump supply, switched through relay K2&rsquo;s NO/COM.</li>
+      <li><strong>JQC-3FF-S-Z 4-channel relay module</strong>, still active-LOW.</li>
+      <li><strong>Pulsed-sampling pattern</strong> from <code>PotPi v2</code> (median-of-medians).</li>
+      <li><strong>Sensor power gating</strong> via a transistor &mdash; same idea, different MCU pin.</li>
+    </ul>
+  </div>
+  <div class="card changes">
+    <h3>Changes</h3>
+    <ul>
+      <li><strong>Host board</strong>: Raspberry Pi 3B &rarr; NodeMCU ESP8266 (Amica v1.0).</li>
+      <li><strong>Pin numbers</strong>: BCM GPIOs &rarr; NodeMCU D-labels / ESP GPIOs
+        (see tables above).</li>
+      <li><strong>CS pin</strong>: <code>GPIO 5</code> (Pi) &rarr; <code>D0 / GPIO 16</code> (ESP) &mdash;
+        still software-controlled.</li>
+      <li><strong>Sensor power gate</strong>: <code>GPIO 18</code> &rarr; <code>D2 / GPIO 4</code>
+        (moved off strapping pins; add a 10&nbsp;k&Omega; pull-up).</li>
+      <li><strong>Pump 2 control</strong>: <code>GPIO 17</code> &rarr; <code>D1 / GPIO 5</code>
+        (moved off strapping pins; add a 10&nbsp;k&Omega; pull-up on the relay IN line).</li>
+      <li><strong>OLED display removed</strong> &mdash; SSD1306 stays with the Pi.</li>
+      <li><strong>Pump 1 stays unwired</strong> in the new build (motor still dead).</li>
+      <li><strong>Storage</strong>: SD card filesystem &rarr; LittleFS on ESP flash.</li>
+      <li><strong>Connectivity</strong>: local-only on Pi &rarr; WiFi + GitHub Contents API,
+        rendered by Chart.js on GitHub Pages.</li>
+      <li><strong>Relay coil supply</strong>: from Pi 5V rail &rarr; from NodeMCU <code>Vin</code>
+        (USB pass-through).</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ============== LABELS ============== -->
+<h2>Label these wires before unplugging from the Pi</h2>
+<div class="labels">
+  <p style="margin-top:0; color:var(--ink-soft);">
+    Tag every conductor at the Pi end with masking tape and a pen
+    <em>before</em> you pull anything. Check each off as you label it.
+    Progress and ticks are saved in this browser only.
+  </p>
+  <div class="labels-grid" id="labels-grid">
+    <!-- populated by JS -->
+  </div>
+  <div class="progress" aria-hidden="true"><div id="labels-bar"></div></div>
+  <div class="labels-meta">
+    <span id="labels-count">0 / 0 labelled</span>
+    <span>
+      <button type="button" id="labels-reset">Reset</button>
+    </span>
+  </div>
+</div>
+
+<footer class="foot">
+  <span>PotPi-ESP &middot; hardware migration reference</span>
+  <span>Single self-contained HTML, no external dependencies</span>
+  <span style="margin-left:auto;">Tip: <kbd>1</kbd>/<kbd>2</kbd>/<kbd>3</kbd> to switch view</span>
+</footer>
+
+</div>
+
+<div class="pin-tooltip" id="pin-tooltip" role="tooltip" aria-hidden="true"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  // ---- mode toggle ----
+  var modes = document.querySelector(".modes");
+  var setups = document.getElementById("setups");
+  function setMode(mode) {
+    setups.classList.remove("single-a", "single-b");
+    if (mode === "a") setups.classList.add("single-a");
+    if (mode === "b") setups.classList.add("single-b");
+    var btns = modes.querySelectorAll("button");
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].setAttribute("aria-pressed", btns[i].dataset.mode === mode ? "true" : "false");
+    }
+    try { localStorage.setItem("potpi.mode", mode); } catch (e) {}
+  }
+  modes.addEventListener("click", function (e) {
+    var t = e.target.closest("button[data-mode]");
+    if (t) setMode(t.dataset.mode);
+  });
+  // restore
+  var savedMode = "both";
+  try { savedMode = localStorage.getItem("potpi.mode") || "both"; } catch (e) {}
+  setMode(savedMode);
+
+  // keyboard shortcuts 1/2/3
+  document.addEventListener("keydown", function (e) {
+    if (e.target && (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA")) return;
+    if (e.key === "1") setMode("both");
+    else if (e.key === "2") setMode("a");
+    else if (e.key === "3") setMode("b");
+  });
+
+  // ---- wire labels checklist ----
+  var labels = [
+    { name: "MCP_CLK",    note: "SPI clock, Pi pin 23 (GPIO 11)" },
+    { name: "MCP_MISO",   note: "SPI MISO, Pi pin 21 (GPIO 9)" },
+    { name: "MCP_MOSI",   note: "SPI MOSI, Pi pin 19 (GPIO 10)" },
+    { name: "MCP_CS",     note: "software CS, Pi pin 29 (GPIO 5)" },
+    { name: "MCP_3V3",    note: "VDD + VREF of MCP3008" },
+    { name: "MCP_GND",    note: "DGND + AGND of MCP3008" },
+    { name: "SENS_PWR",   note: "sensor power gate (active-LOW), Pi pin 12 (GPIO 18)" },
+    { name: "PUMP_2_IN",  note: "relay IN2, Pi pin 11 (GPIO 17), active-LOW" },
+    { name: "RELAY_VCC",  note: "relay module 5V coil supply" },
+    { name: "RELAY_GND",  note: "relay module ground" }
+  ];
+
+  var grid = document.getElementById("labels-grid");
+  var bar = document.getElementById("labels-bar");
+  var count = document.getElementById("labels-count");
+  var stateKey = "potpi.labels.v1";
+  var state = {};
+  try { state = JSON.parse(localStorage.getItem(stateKey) || "{}") || {}; } catch (e) { state = {}; }
+
+  function render() {
+    grid.innerHTML = "";
+    labels.forEach(function (l) {
+      var id = "lbl-" + l.name;
+      var checked = !!state[l.name];
+      var label = document.createElement("label");
+      label.setAttribute("for", id);
+      label.innerHTML =
+        '<input type="checkbox" id="' + id + '" ' + (checked ? "checked" : "") + ' />' +
+        '<span class="lbl">' + l.name + '<small>' + l.note + '</small></span>';
+      var cb = label.querySelector("input");
+      cb.addEventListener("change", function () {
+        state[l.name] = cb.checked;
+        try { localStorage.setItem(stateKey, JSON.stringify(state)); } catch (e) {}
+        updateProgress();
+      });
+      grid.appendChild(label);
+    });
+    updateProgress();
+  }
+  function updateProgress() {
+    var total = labels.length;
+    var done = labels.reduce(function (n, l) { return n + (state[l.name] ? 1 : 0); }, 0);
+    bar.style.width = total ? (100 * done / total) + "%" : "0%";
+    count.textContent = done + " / " + total + " labelled";
+  }
+  document.getElementById("labels-reset").addEventListener("click", function () {
+    state = {};
+    try { localStorage.removeItem(stateKey); } catch (e) {}
+    render();
+  });
+  render();
+
+  // ---- pin diagrams ----
+  var SVG_NS = "http://www.w3.org/2000/svg";
+
+  // shared role definitions — same id == same wire role across diagrams
+  // role ids: spi, cs, sensor, pump, power3v3, power5v, gnd
+  function roleClass(role) {
+    if (!role) return "";
+    if (role === "spi") return "role-spi";
+    if (role === "cs") return "role-cs";
+    if (role === "sensor") return "role-sensor";
+    if (role === "pump") return "role-pump";
+    if (role === "power3v3" || role === "power5v") return "role-power";
+    if (role === "gnd") return "role-gnd";
+    return "";
+  }
+
+  // ---------- Raspberry Pi 3B 40-pin header ----------
+  // (label, gpio, role, tag) — tag shown only when role !== null
+  var piPins = [
+    // [oddPin, evenPin]
+    [{label:"3V3",       gpio:"",         role:"power3v3", tag:"MCP3008 VDD + VREF"},
+     {label:"5V",        gpio:"",         role:"power5v",  tag:"RELAY VCC (5V)"}],
+    [{label:"SDA1",      gpio:"GPIO 2",   role:null,       tag:"OLED SDA (to be removed)", removed:true},
+     {label:"5V",        gpio:"",         role:null}],
+    [{label:"SCL1",      gpio:"GPIO 3",   role:null,       tag:"OLED SCL (to be removed)", removed:true},
+     {label:"GND",       gpio:"",         role:"gnd",      tag:"MCP3008 GND, RELAY GND"}],
+    [{label:"GPIO 4",    gpio:"",         role:null,       tag:"PUMP 1 IN (broken — discard)", broken:true},
+     {label:"TXD0",      gpio:"GPIO 14",  role:null}],
+    [{label:"GND",       gpio:"",         role:null},
+     {label:"RXD0",      gpio:"GPIO 15",  role:null}],
+    [{label:"GPIO 17",   gpio:"",         role:"pump",     tag:"PUMP 2 IN (active-LOW)"},
+     {label:"GPIO 18",   gpio:"",         role:"sensor",   tag:"SENSOR PWR (active-LOW)"}],
+    [{label:"GPIO 27",   gpio:"",         role:null},
+     {label:"GND",       gpio:"",         role:null}],
+    [{label:"GPIO 22",   gpio:"",         role:null},
+     {label:"GPIO 23",   gpio:"",         role:null}],
+    [{label:"3V3",       gpio:"",         role:null},
+     {label:"GPIO 24",   gpio:"",         role:null}],
+    [{label:"MOSI",      gpio:"GPIO 10",  role:"spi",      tag:"MCP3008 MOSI"},
+     {label:"GND",       gpio:"",         role:null}],
+    [{label:"MISO",      gpio:"GPIO 9",   role:"spi",      tag:"MCP3008 MISO"},
+     {label:"GPIO 25",   gpio:"",         role:null}],
+    [{label:"SCLK",      gpio:"GPIO 11",  role:"spi",      tag:"MCP3008 SCLK"},
+     {label:"CE0",       gpio:"GPIO 8",   role:null}],
+    [{label:"GND",       gpio:"",         role:null},
+     {label:"CE1",       gpio:"GPIO 7",   role:null}],
+    [{label:"ID_SD",     gpio:"GPIO 0",   role:null},
+     {label:"ID_SC",     gpio:"GPIO 1",   role:null}],
+    [{label:"GPIO 5",    gpio:"",         role:"cs",       tag:"MCP3008 CS"},
+     {label:"GND",       gpio:"",         role:null}],
+    [{label:"GPIO 6",    gpio:"",         role:null},
+     {label:"GPIO 12",   gpio:"",         role:null}],
+    [{label:"GPIO 13",   gpio:"",         role:null},
+     {label:"GND",       gpio:"",         role:null}],
+    [{label:"GPIO 19",   gpio:"",         role:null},
+     {label:"GPIO 16",   gpio:"",         role:null}],
+    [{label:"GPIO 26",   gpio:"",         role:null},
+     {label:"GPIO 20",   gpio:"",         role:null}],
+    [{label:"GND",       gpio:"",         role:null},
+     {label:"GPIO 21",   gpio:"",         role:null}]
+  ];
+
+  // ---------- NodeMCU Amica pinout ----------
+  // 15 pins per column. Top = USB end. Left col then right col.
+  // Some pins are strapping pins (D3/GPIO0, D4/GPIO2, D8/GPIO15) — mark separately.
+  var espLeft = [
+    {label:"A0",  gpio:"",        role:null},
+    {label:"RSV", gpio:"",        role:null},
+    {label:"RSV", gpio:"",        role:null},
+    {label:"SD3", gpio:"GPIO 10", role:null},
+    {label:"SD2", gpio:"GPIO 9",  role:null},
+    {label:"SD1", gpio:"GPIO 8",  role:null},
+    {label:"CMD", gpio:"GPIO 11", role:null},
+    {label:"SD0", gpio:"GPIO 7",  role:null},
+    {label:"CLK", gpio:"GPIO 6",  role:null},
+    {label:"GND", gpio:"",        role:null},
+    {label:"3V3", gpio:"",        role:null},
+    {label:"EN",  gpio:"",        role:null},
+    {label:"RST", gpio:"",        role:null},
+    {label:"GND", gpio:"",        role:"gnd",      tag:"MCP3008 GND, RELAY GND"},
+    {label:"VIN", gpio:"",        role:"power5v",  tag:"RELAY VCC (5V)"}
+  ];
+  var espRight = [
+    {label:"D0",  gpio:"GPIO 16", role:"cs",       tag:"MCP3008 CS"},
+    {label:"D1",  gpio:"GPIO 5",  role:"pump",     tag:"PUMP RELAY IN (active-LOW)"},
+    {label:"D2",  gpio:"GPIO 4",  role:"sensor",   tag:"SENSOR PWR (active-LOW)"},
+    {label:"D3",  gpio:"GPIO 0",  role:null,       strap:true},
+    {label:"D4",  gpio:"GPIO 2",  role:null,       strap:true},
+    {label:"3V3", gpio:"",        role:"power3v3", tag:"MCP3008 VDD + VREF"},
+    {label:"GND", gpio:"",        role:null},
+    {label:"D5",  gpio:"GPIO 14", role:"spi",      tag:"MCP3008 SCLK"},
+    {label:"D6",  gpio:"GPIO 12", role:"spi",      tag:"MCP3008 MISO"},
+    {label:"D7",  gpio:"GPIO 13", role:"spi",      tag:"MCP3008 MOSI"},
+    {label:"D8",  gpio:"GPIO 15", role:null,       strap:true},
+    {label:"RX",  gpio:"GPIO 3",  role:null},
+    {label:"TX",  gpio:"GPIO 1",  role:null},
+    {label:"GND", gpio:"",        role:null},
+    {label:"3V3", gpio:"",        role:null}
+  ];
+
+  function tagText(p) {
+    var bits = [];
+    if (p.strap) bits.push("STRAP — avoid for outputs that can float low");
+    if (p.tag) bits.push(p.tag);
+    return bits;
+  }
+
+  function mkSvg(tag, attrs) {
+    var el = document.createElementNS(SVG_NS, tag);
+    if (attrs) {
+      for (var k in attrs) if (attrs.hasOwnProperty(k)) el.setAttribute(k, attrs[k]);
+    }
+    return el;
+  }
+
+  function mkText(x, y, content, cls, anchor) {
+    var t = mkSvg("text", { x: x, y: y, "class": cls || "" });
+    if (anchor) t.setAttribute("text-anchor", anchor);
+    t.textContent = content;
+    return t;
+  }
+
+  function renderPiPins() {
+    var g = document.getElementById("pi-pins");
+    if (!g) return;
+    var startY = 50;
+    var rowH = 22;
+    var pinW = 90;
+    var pinH = 18;
+    var leftX = 72;     // odd pins
+    var rightX = 460 - 72 - pinW; // even pins
+    var midX = 230;
+
+    for (var i = 0; i < piPins.length; i++) {
+      var oddPinNum = i * 2 + 1;
+      var evenPinNum = i * 2 + 2;
+      var yTop = startY + i * rowH;
+
+      // pin number circles in middle
+      var cyL = yTop + pinH / 2;
+      var cnL = mkSvg("circle", { cx: midX - 14, cy: cyL, r: 7.5, "class": "pin-num-circle" });
+      g.appendChild(cnL);
+      g.appendChild(mkText(midX - 14, cyL + 2.5, String(oddPinNum), "pin-num-text", "middle"));
+      var cnR = mkSvg("circle", { cx: midX + 14, cy: cyL, r: 7.5, "class": "pin-num-circle" });
+      g.appendChild(cnR);
+      g.appendChild(mkText(midX + 14, cyL + 2.5, String(evenPinNum), "pin-num-text", "middle"));
+
+      // left pin (odd)
+      renderPin(g, piPins[i][0], leftX, yTop, pinW, pinH, "left", oddPinNum, "pi");
+      // right pin (even)
+      renderPin(g, piPins[i][1], rightX, yTop, pinW, pinH, "right", evenPinNum, "pi");
+    }
+  }
+
+  function renderEspPins() {
+    var g = document.getElementById("esp-pins");
+    if (!g) return;
+    var startY = 90;
+    var rowH = 27;
+    var pinW = 90;
+    var pinH = 22;
+    var leftX = 28;
+    var rightX = 460 - 28 - pinW;
+
+    for (var i = 0; i < espLeft.length; i++) {
+      var yTop = startY + i * rowH;
+      renderPin(g, espLeft[i], leftX, yTop, pinW, pinH, "left", i + 1, "esp");
+      renderPin(g, espRight[i], rightX, yTop, pinW, pinH, "right", i + 1, "esp");
+    }
+  }
+
+  function renderPin(parent, pin, x, y, w, h, side, idx, diag) {
+    var role = pin.role || "";
+    var cls = "pin-box";
+    var rc = roleClass(role);
+    if (rc) cls += " " + rc;
+    if (pin.strap) cls += " is-strap role-none";
+
+    var rect = mkSvg("rect", {
+      x: x, y: y, width: w, height: h, rx: 3,
+      "class": cls,
+      "data-role": role || (pin.strap ? "strap" : ""),
+      "data-name": pin.label + (pin.gpio ? " (" + pin.gpio + ")" : ""),
+      "data-tag": tagText(pin).join(" — ")
+    });
+    parent.appendChild(rect);
+
+    // label text (silkscreen)
+    var labelX = side === "left" ? x + 8 : x + w - 8;
+    var anchor = side === "left" ? "start" : "end";
+    parent.appendChild(mkText(labelX, y + 11, pin.label, "pin-label", anchor));
+    if (pin.gpio) {
+      parent.appendChild(mkText(labelX, y + 20, pin.gpio, "pin-gpio", anchor));
+    }
+
+    // outside tag (role description) if highlighted
+    var info = tagText(pin);
+    if (info.length) {
+      var tagX = side === "left" ? x - 4 : x + w + 4;
+      var tagAnchor = side === "left" ? "end" : "start";
+      // first line: role tag (or STRAP if only strap)
+      var first = info[0];
+      var tcls = "pin-tag";
+      if (pin.strap && info.length === 1) tcls += " strap-tag";
+      parent.appendChild(mkText(tagX, y + 11, first, tcls, tagAnchor));
+      if (info.length > 1) {
+        // second line: project tag
+        parent.appendChild(mkText(tagX, y + 21, info[1], "pin-tag", tagAnchor));
+      }
+    }
+
+    // accessibility title
+    var title = mkSvg("title");
+    title.textContent = pin.label + (pin.gpio ? " — " + pin.gpio : "") +
+      (info.length ? " — " + info.join(" — ") : "");
+    rect.appendChild(title);
+  }
+
+  renderPiPins();
+  renderEspPins();
+
+  // ---- tooltips + cross-highlight ----
+  var tooltip = document.getElementById("pin-tooltip");
+  var allPinBoxes = document.querySelectorAll("svg .pin-box");
+  var activeRole = null;
+
+  function showTooltip(e, rect) {
+    var name = rect.getAttribute("data-name");
+    var tag = rect.getAttribute("data-tag");
+    if (!name && !tag) return;
+    tooltip.innerHTML = '<div class="ttn">' + escapeHtml(name) + '</div>' +
+      (tag ? '<div class="ttr">' + escapeHtml(tag) + '</div>' : '');
+    tooltip.style.left = e.clientX + "px";
+    tooltip.style.top = e.clientY + "px";
+    tooltip.classList.add("show");
+    tooltip.setAttribute("aria-hidden", "false");
+  }
+  function moveTooltip(e) {
+    tooltip.style.left = e.clientX + "px";
+    tooltip.style.top = e.clientY + "px";
+  }
+  function hideTooltip() {
+    tooltip.classList.remove("show");
+    tooltip.setAttribute("aria-hidden", "true");
+  }
+
+  function escapeHtml(s) {
+    return String(s || "").replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  function clearFlash() {
+    for (var i = 0; i < allPinBoxes.length; i++) {
+      allPinBoxes[i].classList.remove("flash");
+    }
+    activeRole = null;
+  }
+
+  function flashRole(role) {
+    if (!role || role === "strap") { clearFlash(); return; }
+    if (activeRole === role) { clearFlash(); return; }
+    clearFlash();
+    activeRole = role;
+    for (var i = 0; i < allPinBoxes.length; i++) {
+      if (allPinBoxes[i].getAttribute("data-role") === role) {
+        allPinBoxes[i].classList.add("flash");
+      }
+    }
+  }
+
+  for (var i = 0; i < allPinBoxes.length; i++) {
+    var rect = allPinBoxes[i];
+    var role = rect.getAttribute("data-role");
+    if (!role) continue;
+    rect.addEventListener("mouseenter", (function (r) {
+      return function (e) { showTooltip(e, r); };
+    })(rect));
+    rect.addEventListener("mousemove", moveTooltip);
+    rect.addEventListener("mouseleave", hideTooltip);
+    rect.addEventListener("click", (function (r) {
+      return function () {
+        var rr = r.getAttribute("data-role");
+        if (!rr || rr === "strap") return;
+        flashRole(rr);
+      };
+    })(rect));
+  }
+
+  // click outside diagrams clears cross-highlight
+  document.addEventListener("click", function (e) {
+    if (!e.target.closest("svg [data-role]")) clearFlash();
+  });
+})();
+</script>
+</body>
+</html>

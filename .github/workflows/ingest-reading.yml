@@ -1,0 +1,83 @@
+name: ingest-reading
+# Triggered by the ESP8266 firmware sending a repository_dispatch event.
+# Appends one row to data/YYYY-MM-DD.csv (UTC), updates data/index.json,
+# commits the result. GitHub Pages then serves the new data to the dashboard.
+
+on:
+  repository_dispatch:
+    types: [potpi-reading]
+
+permissions:
+  contents: write
+
+concurrency:
+  # Serialise commits so two near-simultaneous dispatches don't conflict.
+  group: data-write
+  cancel-in-progress: false
+
+jobs:
+  append:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Append CSV row
+        env:
+          PAYLOAD: ${{ toJson(github.event.client_payload) }}
+        run: |
+          set -euo pipefail
+          echo "Payload: $PAYLOAD"
+
+          ts=$(jq -r '.ts'      <<< "$PAYLOAD")
+          v0=$(jq -r '.v0'      <<< "$PAYLOAD")
+          v1=$(jq -r '.v1'      <<< "$PAYLOAD")
+          p0=$(jq -r '.p0'      <<< "$PAYLOAD")
+          p1=$(jq -r '.p1'      <<< "$PAYLOAD")
+          pAgg=$(jq -r '.pAgg'  <<< "$PAYLOAD")
+          valid=$(jq -r '.valid' <<< "$PAYLOAD")
+          watered=$(jq -r '.watered' <<< "$PAYLOAD")
+          pumpSeconds=$(jq -r '.pumpSeconds' <<< "$PAYLOAD")
+          device=$(jq -r '.device' <<< "$PAYLOAD")
+          mac=$(jq -r '.mac'    <<< "$PAYLOAD")
+
+          # Fallback to current UTC time if dispatcher didn't send one
+          if [ -z "$ts" ] || [ "$ts" = "null" ]; then
+            ts=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          fi
+
+          date_part=$(echo "$ts" | cut -c1-10)
+          mkdir -p data
+          file="data/${date_part}.csv"
+
+          if [ ! -f "$file" ]; then
+            echo "timestamp,voltage_ch0,voltage_ch1,percent_ch0,percent_ch1,percent_mean,valid,watered,pump_seconds,device,mac" > "$file"
+          fi
+          echo "${ts},${v0},${v1},${p0},${p1},${pAgg},${valid},${watered},${pumpSeconds},${device},${mac}" >> "$file"
+
+          # Maintain data/index.json — sorted list of CSV files the dashboard reads.
+          # Avoids the dashboard having to use the GitHub API (rate-limited for anonymous).
+          ls data/*.csv 2>/dev/null \
+            | sort \
+            | jq -R . \
+            | jq -s '{files: .}' \
+            > data/index.json
+
+      - name: Commit
+        run: |
+          set -euo pipefail
+          if git diff --quiet data/; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git config user.email "actions@github.com"
+          git config user.name  "PotPi Bot"
+          git add data/
+          ts_short=$(jq -r '.ts' <<< '${{ toJson(github.event.client_payload) }}' | tr -d ':' | tr -d '-' | cut -c1-13)
+          git commit -m "data: reading ${ts_short}"
+          # Retry once if push races with another concurrent run
+          if ! git push; then
+            sleep 2
+            git pull --rebase
+            git push
+          fi

@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PotPi — soil moisture dashboard</title>
+<style>
+  :root {
+    --bg: #f6f6f4;
+    --fg: #222;
+    --muted: #777;
+    --accent: #2a6f4d;
+    --accent2: #a14b1a;
+    --card: #fff;
+    --border: #e2e2dd;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font: 15px/1.5 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    padding: 24px;
+    max-width: 1100px;
+    margin-inline: auto;
+  }
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 12px;
+    margin-bottom: 24px;
+  }
+  h1 { margin: 0; font-size: 22px; font-weight: 600; }
+  .meta { color: var(--muted); font-size: 13px; }
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .stat {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 14px;
+  }
+  .stat .label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .stat .value { font-size: 22px; font-weight: 600; margin-top: 2px; }
+  .stat .sub   { color: var(--muted); font-size: 12px; }
+  .chart-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  .chart-card h2 { margin: 0 0 12px; font-size: 14px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .controls { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+  .controls label { font-size: 13px; color: var(--muted); }
+  .controls select { font: inherit; padding: 4px 8px; border: 1px solid var(--border); border-radius: 4px; background: white; }
+  canvas { width: 100% !important; height: 320px !important; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { padding: 6px 10px; text-align: left; border-bottom: 1px solid var(--border); }
+  th { color: var(--muted); font-weight: 500; }
+  .status-error { color: var(--accent2); }
+  footer { color: var(--muted); font-size: 12px; margin-top: 24px; }
+  code { background: #eee; padding: 0 4px; border-radius: 3px; font-size: 13px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>PotPi</h1>
+  <div class="meta" id="meta">loading…</div>
+</header>
+
+<section class="stats" id="stats"></section>
+
+<div class="chart-card">
+  <h2>Moisture % over time</h2>
+  <div class="controls">
+    <label>Window:
+      <select id="windowSel">
+        <option value="1">last 24 h</option>
+        <option value="3">last 3 d</option>
+        <option value="7" selected>last 7 d</option>
+        <option value="30">last 30 d</option>
+        <option value="0">all</option>
+      </select>
+    </label>
+    <label>Show:
+      <select id="seriesSel">
+        <option value="mean" selected>aggregate (mean of CH0 + CH1)</option>
+        <option value="both">both channels separately</option>
+        <option value="all">aggregate + both channels</option>
+      </select>
+    </label>
+  </div>
+  <canvas id="chart"></canvas>
+</div>
+
+<div class="chart-card">
+  <h2>Watering events</h2>
+  <table id="events">
+    <thead><tr><th>timestamp (UTC)</th><th>moisture at decision</th><th>pump seconds</th><th>device</th></tr></thead>
+    <tbody><tr><td colspan="4" style="color: var(--muted);">none yet</td></tr></tbody>
+  </table>
+</div>
+
+<footer>
+  Source data committed by the <code>ingest-reading</code> workflow when the ESP8266 fires a
+  <code>repository_dispatch</code>. Files live under <code>/data/*.csv</code>. View them on
+  <a href="https://github.com/PhilWicke/potpi/tree/main/data">GitHub</a>.
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
+<script>
+(async function () {
+  const $ = (id) => document.getElementById(id);
+  const meta = $('meta');
+
+  // --- Load index of CSVs ---
+  let files = [];
+  try {
+    const r = await fetch('data/index.json', { cache: 'no-store' });
+    if (r.ok) {
+      const j = await r.json();
+      files = j.files || [];
+    }
+  } catch (e) {
+    console.warn('index.json fetch failed', e);
+  }
+
+  if (files.length === 0) {
+    meta.innerHTML = '<span class="status-error">no data yet — waiting for the first reading</span>';
+    return;
+  }
+  files.sort();
+
+  // --- Fetch each CSV and parse ---
+  const rows = [];
+  for (const f of files) {
+    try {
+      const r = await fetch(f, { cache: 'no-store' });
+      if (!r.ok) continue;
+      const text = await r.text();
+      const lines = text.trim().split(/\r?\n/);
+      if (lines.length < 2) continue;
+      const header = lines[0].split(',');
+      for (let i = 1; i < lines.length; i++) {
+        const cells = lines[i].split(',');
+        const row = {};
+        header.forEach((h, j) => row[h] = cells[j]);
+        rows.push(row);
+      }
+    } catch (e) { console.warn('csv fetch failed', f, e); }
+  }
+
+  // --- Coerce types ---
+  for (const r of rows) {
+    r._ts = new Date(r.timestamp);
+    r._v0 = parseFloat(r.voltage_ch0);
+    r._v1 = parseFloat(r.voltage_ch1);
+    r._p0 = parseFloat(r.percent_ch0);
+    r._p1 = parseFloat(r.percent_ch1);
+    r._pAgg = parseFloat(r.percent_mean);
+    r._watered = (r.watered === 'true' || r.watered === '1');
+    r._pumpSec = parseFloat(r.pump_seconds);
+  }
+  rows.sort((a, b) => a._ts - b._ts);
+
+  meta.textContent = `${rows.length} readings · last update ${rows[rows.length-1]._ts.toISOString()}`;
+
+  // --- Stats ---
+  const last = rows[rows.length - 1];
+  const watered24 = rows.filter(r => r._watered && (Date.now() - r._ts) < 86400000).length;
+  const stats = [
+    { label: 'current % (mean)', value: isFinite(last._pAgg) ? last._pAgg.toFixed(1) + '%' : '—' },
+    { label: 'CH0', value: isFinite(last._p0) ? last._p0.toFixed(1) + '%' : '—', sub: isFinite(last._v0) ? last._v0.toFixed(3) + ' V' : '' },
+    { label: 'CH1', value: isFinite(last._p1) ? last._p1.toFixed(1) + '%' : '—', sub: isFinite(last._v1) ? last._v1.toFixed(3) + ' V' : '' },
+    { label: 'watered (24 h)', value: watered24 },
+    { label: 'total readings', value: rows.length },
+  ];
+  $('stats').innerHTML = stats.map(s =>
+    `<div class="stat"><div class="label">${s.label}</div>
+      <div class="value">${s.value}</div>
+      <div class="sub">${s.sub || ''}</div></div>`
+  ).join('');
+
+  // --- Events table ---
+  const events = rows.filter(r => r._watered).slice(-20).reverse();
+  if (events.length > 0) {
+    $('events').querySelector('tbody').innerHTML = events.map(r => `
+      <tr>
+        <td>${r._ts.toISOString().replace('T',' ').slice(0,19)}</td>
+        <td>${isFinite(r._pAgg) ? r._pAgg.toFixed(1) + '%' : '—'}</td>
+        <td>${isFinite(r._pumpSec) ? r._pumpSec.toFixed(1) : '—'}</td>
+        <td>${r.device || ''}</td>
+      </tr>`).join('');
+  }
+
+  // --- Chart ---
+  const chart = new Chart($('chart'), {
+    type: 'line',
+    data: { datasets: [] },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: false,
+      parsing: false,
+      scales: {
+        x: { type: 'time', time: { tooltipFormat: 'yyyy-MM-dd HH:mm' } },
+        y: { min: 0, max: 100, title: { display: true, text: 'moisture %' } }
+      },
+      plugins: { legend: { position: 'bottom' } }
+    }
+  });
+
+  function render() {
+    const days = parseInt($('windowSel').value, 10);
+    const series = $('seriesSel').value;
+    const cutoff = days > 0 ? Date.now() - days * 86400000 : 0;
+    const view = rows.filter(r => r._ts.getTime() >= cutoff);
+
+    const ds = [];
+    const aggData = view.map(r => ({ x: r._ts, y: r._pAgg }));
+    const ch0Data = view.map(r => ({ x: r._ts, y: r._p0 }));
+    const ch1Data = view.map(r => ({ x: r._ts, y: r._p1 }));
+
+    if (series === 'mean' || series === 'all') {
+      ds.push({ label: 'aggregate', data: aggData, borderColor: '#2a6f4d', backgroundColor: '#2a6f4d22', tension: 0.2 });
+    }
+    if (series === 'both' || series === 'all') {
+      ds.push({ label: 'CH0', data: ch0Data, borderColor: '#436b95', backgroundColor: '#436b9522', tension: 0.2, borderDash: [3,3] });
+      ds.push({ label: 'CH1', data: ch1Data, borderColor: '#a14b1a', backgroundColor: '#a14b1a22', tension: 0.2, borderDash: [3,3] });
+    }
+    chart.data.datasets = ds;
+    chart.update();
+  }
+
+  $('windowSel').addEventListener('change', render);
+  $('seriesSel').addEventListener('change', render);
+  // Load Chart.js time adapter via CDN (date-fns adapter)
+  await import('https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/+esm');
+  render();
+})();
+</script>
+
+</body>
+</html>

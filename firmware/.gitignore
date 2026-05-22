@@ -1,0 +1,15 @@
+# Local secrets — copied from include/secrets.h.template
+include/secrets.h
+
+# PlatformIO build artefacts
+.pio/
+.pioenvs/
+.piolibdeps/
+.vscode/
+.clang_complete
+.gcc-flags.json
+
+# Editor noise
+*.swp
+*.swo
+.DS_Store

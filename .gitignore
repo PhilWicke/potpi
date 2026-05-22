@@ -1,0 +1,15 @@
+# Editor / OS
+.DS_Store
+*.swp
+*.swo
+
+# PlatformIO
+firmware/.pio/
+firmware/.pioenvs/
+firmware/.piolibdeps/
+firmware/.vscode/
+firmware/.clang_complete
+firmware/.gcc-flags.json
+
+# Secrets — only the template is committed
+firmware/include/secrets.h

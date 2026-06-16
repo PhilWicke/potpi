@@ -494,9 +494,11 @@
           <rect x="3" y="4" width="34" height="32" rx="6" fill="#FFF7EC" stroke="#8C5A3C" stroke-width="2"/>
           <line x1="20" y1="4" x2="20" y2="36" stroke="#8C5A3C" stroke-width="1.5"/>
           <line x1="3" y1="20" x2="37" y2="20" stroke="#8C5A3C" stroke-width="1.5"/>
-          <!-- tiny leaves -->
-          <ellipse cx="11" cy="12" rx="3.5" ry="5" fill="#6B8E5A" transform="rotate(-20 11 12)"/>
-          <ellipse cx="29" cy="28" rx="3" ry="4.5" fill="#6B8E5A" transform="rotate(15 29 28)"/>
+          <!-- tiny leaves — matching the SVG tableau's leaf vocabulary -->
+          <path d="M11 7 C 13.8 8, 15 11, 14.3 14 C 13.6 16.6, 11.8 17.4, 11 17.6 C 10.2 17.4, 8.4 16.6, 7.7 14 C 7 11, 8.2 8, 11 7 Z"
+                fill="#6B8E5A" transform="rotate(-22 11 12)"/>
+          <path d="M29 23 C 31.4 24, 32.4 26.6, 31.8 29 C 31.2 31.2, 29.7 31.9, 29 32 C 28.3 31.9, 26.8 31.2, 26.2 29 C 25.6 26.6, 26.6 24, 29 23 Z"
+                fill="#7AA161" transform="rotate(18 29 28)"/>
         </svg>
         <div>
           <div class="brand-name">potpi</div>
@@ -644,34 +646,94 @@ function buildHeroSvg() {
   wrap.innerHTML = `
 <svg viewBox="0 0 1200 750" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <!-- Sky gradients for each mood -->
+    <!-- Sky gradients for each mood — tuned for the atmospheric-light variant -->
     <linearGradient id="skySunset" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#F9C9A0"/>
-      <stop offset="40%" stop-color="#F5A877"/>
-      <stop offset="80%" stop-color="#E88A5E"/>
-      <stop offset="100%" stop-color="#C7693F"/>
+      <stop offset="0%" stop-color="#FBD8B0"/>
+      <stop offset="35%" stop-color="#F6B689"/>
+      <stop offset="75%" stop-color="#E8946A"/>
+      <stop offset="100%" stop-color="#C46B44"/>
     </linearGradient>
     <linearGradient id="skyOk" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#CFE3F2"/>
-      <stop offset="50%" stop-color="#F4D6C5"/>
-      <stop offset="100%" stop-color="#F8C4A8"/>
+      <stop offset="0%" stop-color="#D6E6F2"/>
+      <stop offset="55%" stop-color="#F2D8C4"/>
+      <stop offset="100%" stop-color="#F6BFA0"/>
     </linearGradient>
     <linearGradient id="skyMoist" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#B9C8D6"/>
-      <stop offset="60%" stop-color="#D9DCDF"/>
-      <stop offset="100%" stop-color="#E6E1DA"/>
+      <stop offset="0%" stop-color="#BCCAD8"/>
+      <stop offset="60%" stop-color="#D8DCE0"/>
+      <stop offset="100%" stop-color="#E7E2DA"/>
     </linearGradient>
     <linearGradient id="skyWet" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#6E7E92"/>
-      <stop offset="60%" stop-color="#94A3B3"/>
-      <stop offset="100%" stop-color="#AEB7BF"/>
+      <stop offset="60%" stop-color="#96A4B4"/>
+      <stop offset="100%" stop-color="#AFB8C0"/>
     </linearGradient>
 
-    <!-- Sun -->
+    <!-- Sun (warm, low, biased so it rim-lights the plant) -->
     <radialGradient id="sunGlow" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#FFF1C2" stop-opacity="0.9"/>
-      <stop offset="60%" stop-color="#FCD89A" stop-opacity="0.4"/>
+      <stop offset="0%" stop-color="#FFF1C2" stop-opacity="0.95"/>
+      <stop offset="55%" stop-color="#FCD89A" stop-opacity="0.45"/>
       <stop offset="100%" stop-color="#FCD89A" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="sunCoreOk" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFF6D8" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#FFF1C2" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Atmospheric haze behind the plant — soft warm fade so foliage sits in air -->
+    <radialGradient id="hazeWarm" cx="50%" cy="60%" r="55%">
+      <stop offset="0%" stop-color="#FFE3C0" stop-opacity="0.55"/>
+      <stop offset="60%" stop-color="#FFD3A0" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#FFC890" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="hazeCool" cx="50%" cy="60%" r="55%">
+      <stop offset="0%" stop-color="#E6EDF4" stop-opacity="0.55"/>
+      <stop offset="60%" stop-color="#D2DAE4" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#BFC9D5" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Sun-shaft beams — angled wedges of light pouring through the window -->
+    <linearGradient id="sunShaft" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFE5B5" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="#FFE5B5" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="sunShaftSoft" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFEDC8" stop-opacity="0.32"/>
+      <stop offset="100%" stop-color="#FFEDC8" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="rainShaft" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#DCE5EE" stop-opacity="0.28"/>
+      <stop offset="100%" stop-color="#DCE5EE" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- Sill light pool — warm glow on the wood where light lands -->
+    <radialGradient id="sillLightWarm" cx="50%" cy="0%" r="100%">
+      <stop offset="0%" stop-color="#FFE3B6" stop-opacity="0.78"/>
+      <stop offset="55%" stop-color="#FFD195" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#FFD195" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="sillLightSoft" cx="50%" cy="0%" r="100%">
+      <stop offset="0%" stop-color="#FFE9C6" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="#FFE9C6" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="sillLightCool" cx="50%" cy="0%" r="100%">
+      <stop offset="0%" stop-color="#E2ECF4" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#E2ECF4" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Wall wash — gentle bounce of light around the window onto cream wall -->
+    <radialGradient id="wallWashWarm" cx="50%" cy="50%" r="55%">
+      <stop offset="0%" stop-color="#FFE0B0" stop-opacity="0.50"/>
+      <stop offset="55%" stop-color="#FCC894" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#F9BB7E" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="wallWashSoft" cx="50%" cy="50%" r="55%">
+      <stop offset="0%" stop-color="#FFE7C4" stop-opacity="0.30"/>
+      <stop offset="100%" stop-color="#FFE7C4" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="wallWashCool" cx="50%" cy="50%" r="55%">
+      <stop offset="0%" stop-color="#DDE5EE" stop-opacity="0.32"/>
+      <stop offset="100%" stop-color="#DDE5EE" stop-opacity="0"/>
     </radialGradient>
 
     <!-- Tall terracotta pot gradient -->
@@ -680,15 +742,15 @@ function buildHeroSvg() {
       <stop offset="60%" stop-color="#B85A38"/>
       <stop offset="100%" stop-color="#8E3E20"/>
     </linearGradient>
-    <linearGradient id="potHighlight" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#E89A78" stop-opacity="0.7"/>
-      <stop offset="50%" stop-color="#E89A78" stop-opacity="0"/>
-      <stop offset="100%" stop-color="#8E3E20" stop-opacity="0.4"/>
+    <linearGradient id="potRimLight" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#FFD4A8" stop-opacity="0.85"/>
+      <stop offset="35%" stop-color="#F2A380" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#7D3618" stop-opacity="0.5"/>
     </linearGradient>
 
-    <!-- Wood gradients -->
+    <!-- Wood gradients (sill) — warm at the edge, fading inward -->
     <linearGradient id="sillGrad" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#A06F4A"/>
+      <stop offset="0%" stop-color="#A87454"/>
       <stop offset="100%" stop-color="#7A4F30"/>
     </linearGradient>
     <linearGradient id="frameGrad" x1="0" y1="0" x2="1" y2="0">
@@ -697,27 +759,36 @@ function buildHeroSvg() {
       <stop offset="100%" stop-color="#B47A52"/>
     </linearGradient>
 
-    <!-- Leaf gradients — multiple tones so the foliage feels painterly -->
-    <linearGradient id="leafA" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#86A86F"/>
-      <stop offset="100%" stop-color="#4E6B3D"/>
+    <!-- Leaf gradients — rim-lit (warm light along one edge, cooler shade in centre) -->
+    <linearGradient id="leafA" x1="0" y1="0" x2="0.6" y2="1">
+      <stop offset="0%" stop-color="#A8C079"/>
+      <stop offset="60%" stop-color="#6B8B52"/>
+      <stop offset="100%" stop-color="#3F5A2F"/>
     </linearGradient>
-    <linearGradient id="leafB" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#A8C690"/>
-      <stop offset="100%" stop-color="#6F9056"/>
+    <linearGradient id="leafB" x1="0" y1="0" x2="0.6" y2="1">
+      <stop offset="0%" stop-color="#C5D88A"/>
+      <stop offset="60%" stop-color="#85A35E"/>
+      <stop offset="100%" stop-color="#516B3A"/>
     </linearGradient>
-    <linearGradient id="leafC" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#C6DCA2"/>
-      <stop offset="100%" stop-color="#88A66A"/>
+    <linearGradient id="leafC" x1="0" y1="0" x2="0.6" y2="1">
+      <stop offset="0%" stop-color="#E0E6A0"/>
+      <stop offset="60%" stop-color="#A8C078"/>
+      <stop offset="100%" stop-color="#6F8C50"/>
     </linearGradient>
-    <linearGradient id="leafDark" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#5E7D4A"/>
-      <stop offset="100%" stop-color="#3A5530"/>
+    <linearGradient id="leafDark" x1="0" y1="0" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#6F8A50"/>
+      <stop offset="60%" stop-color="#3F5A2F"/>
+      <stop offset="100%" stop-color="#26391C"/>
+    </linearGradient>
+    <!-- Warm rim-light gradient for the back/upper edges of leaves -->
+    <linearGradient id="leafRim" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFE6B8" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#FFE6B8" stop-opacity="0"/>
     </linearGradient>
 
     <!-- Laptop -->
     <linearGradient id="laptopBody" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#D8C9B6"/>
+      <stop offset="0%" stop-color="#DACBB8"/>
       <stop offset="100%" stop-color="#A48E76"/>
     </linearGradient>
     <linearGradient id="laptopScreen" x1="0" y1="0" x2="0" y2="1">
@@ -725,18 +796,22 @@ function buildHeroSvg() {
       <stop offset="100%" stop-color="#3E2C1F"/>
     </linearGradient>
     <radialGradient id="screenGlow" cx="50%" cy="55%" r="60%">
-      <stop offset="0%" stop-color="#FFE0A8" stop-opacity="0.72"/>
-      <stop offset="60%" stop-color="#E08A6E" stop-opacity="0.24"/>
+      <stop offset="0%" stop-color="#FFE0A8" stop-opacity="0.78"/>
+      <stop offset="60%" stop-color="#E08A6E" stop-opacity="0.28"/>
       <stop offset="100%" stop-color="#E08A6E" stop-opacity="0"/>
     </radialGradient>
+    <radialGradient id="screenHalo" cx="50%" cy="50%" r="55%">
+      <stop offset="0%" stop-color="#FFD9A0" stop-opacity="0.30"/>
+      <stop offset="100%" stop-color="#FFD9A0" stop-opacity="0"/>
+    </radialGradient>
 
-    <!-- Cozy interior gradient -->
+    <!-- Cozy interior gradient — graduated cream, warm at top -->
     <linearGradient id="interior" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#FBEFE3"/>
-      <stop offset="100%" stop-color="#F4DDC4"/>
+      <stop offset="100%" stop-color="#F1D6BC"/>
     </linearGradient>
 
-    <!-- Clip the window opening — taller now to give the plant room -->
+    <!-- Clip the window opening -->
     <clipPath id="windowClip">
       <rect x="60" y="40" width="1080" height="560" rx="20"/>
     </clipPath>
@@ -753,102 +828,160 @@ function buildHeroSvg() {
     <filter id="warmGlow" x="-50%" y="-50%" width="200%" height="200%">
       <feGaussianBlur stdDeviation="4"/>
     </filter>
+
+    <!-- ===== Reusable leaf paths — drawn at origin pointing up, scaled & rotated in use ===== -->
+    <!-- Leaf shape A: classic pothos teardrop, pointed tip, soft round base.
+         Drawn from base (0,0) up to tip (0,-180), gently asymmetric. -->
+    <symbol id="leafShape" overflow="visible">
+      <path d="M0 0
+               C -28 -10, -42 -50, -38 -100
+               C -34 -140, -18 -170, 0 -180
+               C 18 -170, 34 -140, 38 -100
+               C 42 -55, 28 -12, 0 0 Z"/>
+    </symbol>
+    <symbol id="leafShapeNarrow" overflow="visible">
+      <path d="M0 0
+               C -20 -10, -30 -55, -26 -105
+               C -22 -145, -12 -170, 0 -180
+               C 12 -170, 22 -145, 26 -105
+               C 30 -55, 20 -10, 0 0 Z"/>
+    </symbol>
+    <!-- Vein path: a soft midline curve from base to tip, can be drawn directly -->
+    <symbol id="leafVein" overflow="visible">
+      <path d="M0 0 C -3 -55, 3 -120, 0 -175" fill="none"/>
+    </symbol>
   </defs>
 
-  <!-- Interior wall (around the window) -->
+  <!-- ===================================================== -->
+  <!-- INTERIOR WALL — graduated cream                         -->
+  <!-- ===================================================== -->
   <rect width="1200" height="750" fill="url(#interior)"/>
 
-  <!-- Wallpaper pattern dots -->
-  <g opacity="0.15" fill="#C7693F">
-    <circle cx="80" cy="30" r="3"/>
-    <circle cx="200" cy="22" r="2.5"/>
-    <circle cx="320" cy="32" r="3"/>
-    <circle cx="900" cy="25" r="2.5"/>
-    <circle cx="1020" cy="35" r="3"/>
-    <circle cx="1150" cy="20" r="2.5"/>
-    <circle cx="60" cy="660" r="3"/>
-    <circle cx="180" cy="680" r="2.5"/>
-    <circle cx="1080" cy="670" r="3"/>
-    <circle cx="1160" cy="700" r="2.5"/>
+  <!-- Soft warm bounce-light glows around the window, on the wall — variant: warm late-afternoon wash -->
+  <g id="wall-warm" class="sky-layer">
+    <ellipse cx="100" cy="320" rx="220" ry="280" fill="url(#wallWashWarm)"/>
+    <ellipse cx="1100" cy="320" rx="220" ry="280" fill="url(#wallWashWarm)"/>
+    <ellipse cx="600" cy="700" rx="900" ry="120" fill="url(#wallWashWarm)" opacity="0.5"/>
+  </g>
+  <g id="wall-soft" class="sky-layer" style="opacity:0;">
+    <ellipse cx="100" cy="320" rx="220" ry="280" fill="url(#wallWashSoft)"/>
+    <ellipse cx="1100" cy="320" rx="220" ry="280" fill="url(#wallWashSoft)"/>
+  </g>
+  <g id="wall-cool" class="sky-layer" style="opacity:0;">
+    <ellipse cx="100" cy="320" rx="220" ry="280" fill="url(#wallWashCool)"/>
+    <ellipse cx="1100" cy="320" rx="220" ry="280" fill="url(#wallWashCool)"/>
   </g>
 
-  <!-- Window opening -->
+  <!-- ===================================================== -->
+  <!-- WINDOW OPENING                                          -->
+  <!-- ===================================================== -->
   <g clip-path="url(#windowClip)">
-    <!-- SKY LAYERS — toggled by opacity -->
+
+    <!-- ===== SKY: dry / late-afternoon sun ===== -->
     <g class="sky-layer" id="sky-dry">
       <rect x="60" y="40" width="1080" height="560" fill="url(#skySunset)"/>
-      <!-- sun, biased left so the plant silhouette catches its light -->
-      <circle cx="250" cy="220" r="200" fill="url(#sunGlow)"/>
-      <circle cx="250" cy="220" r="70" fill="#FFE9B0"/>
-      <circle cx="250" cy="220" r="55" fill="#FFD37A"/>
-      <!-- distant hills -->
-      <path d="M60 440 Q200 370 360 420 Q520 380 700 430 Q880 390 1000 425 Q1100 440 1140 430 L1140 600 L60 600 Z"
-            fill="#A05030" opacity="0.6"/>
-      <path d="M60 490 Q220 440 400 480 Q580 450 760 485 Q940 460 1140 490 L1140 600 L60 600 Z"
+
+      <!-- low sun, biased left so its light rim-lights the plant's right side -->
+      <circle cx="270" cy="240" r="240" fill="url(#sunGlow)"/>
+      <circle cx="270" cy="240" r="86" fill="#FFE9B0" opacity="0.95"/>
+      <circle cx="270" cy="240" r="64" fill="#FFD37A"/>
+      <circle cx="270" cy="240" r="44" fill="#FFC85E" opacity="0.85"/>
+
+      <!-- distant hills — kept, but softened -->
+      <path d="M60 445 Q200 380 360 425 Q520 390 700 432 Q880 400 1000 426 Q1100 438 1140 432 L1140 600 L60 600 Z"
+            fill="#A05030" opacity="0.55"/>
+      <path d="M60 492 Q220 445 400 482 Q580 455 760 486 Q940 462 1140 490 L1140 600 L60 600 Z"
             fill="#7A3A1F" opacity="0.7"/>
-      <!-- distant rooftops -->
-      <g fill="#5E2F18" opacity="0.85">
-        <rect x="100" y="445" width="22" height="48"/>
-        <polygon points="100,445 111,433 122,445"/>
-        <rect x="145" y="455" width="18" height="38"/>
-        <polygon points="145,455 154,443 163,455"/>
-        <rect x="900" y="448" width="20" height="42"/>
-        <polygon points="900,448 910,435 920,448"/>
-        <rect x="935" y="440" width="24" height="50"/>
-        <polygon points="935,440 947,425 959,440"/>
-        <rect x="975" y="450" width="18" height="40"/>
-        <polygon points="975,450 984,437 993,450"/>
-        <rect x="1010" y="455" width="20" height="35"/>
-        <polygon points="1010,455 1020,443 1030,455"/>
+
+      <!-- distant town: ONE soft silhouette band, just a broken ridgeline -->
+      <path d="M60 470
+               L150 470 L156 458 L172 458 L178 470
+               L260 470 L268 452 L284 452 L292 470
+               L360 470
+               L460 472 L468 460 L482 460 L490 472
+               L620 472
+               L740 470 L748 456 L760 456 L766 470
+               L820 470 L830 448 L846 448 L854 470
+               L920 470 L930 460 L948 460 L956 470
+               L1040 470 L1050 452 L1066 452 L1074 470
+               L1140 470 L1140 500 L60 500 Z"
+            fill="#5E2F18" opacity="0.55"/>
+      <!-- two barely-visible chimney/lit-window strokes -->
+      <line x1="278" y1="455" x2="278" y2="452" stroke="#FFE6B0" stroke-width="2" opacity="0.7"/>
+      <line x1="838" y1="450" x2="838" y2="447" stroke="#FFE6B0" stroke-width="2" opacity="0.7"/>
+
+      <!-- sea / horizon ribbon -->
+      <rect x="60" y="500" width="1080" height="100" fill="#C7693F" opacity="0.42"/>
+      <path d="M60 510 Q180 505 300 510 T540 510 T780 510 T1140 510" stroke="#FFE9B0" stroke-width="2" fill="none" opacity="0.65"/>
+      <path d="M60 532 Q180 527 300 532 T540 532 T780 532 T1140 532" stroke="#FFE9B0" stroke-width="1.5" fill="none" opacity="0.45"/>
+
+      <!-- SUN SHAFTS: angled beams of light pouring through the window into the room -->
+      <g opacity="0.9">
+        <polygon points="320,40 460,40 700,600 580,600" fill="url(#sunShaft)"/>
+        <polygon points="510,40 600,40 740,600 660,600" fill="url(#sunShaftSoft)"/>
+        <polygon points="200,40 290,40 480,600 380,600" fill="url(#sunShaftSoft)"/>
       </g>
-      <!-- sea -->
-      <rect x="60" y="500" width="1080" height="100" fill="#C7693F" opacity="0.4"/>
-      <path d="M60 510 Q180 505 300 510 T540 510 T780 510 T1140 510" stroke="#FFE9B0" stroke-width="2" fill="none" opacity="0.6"/>
-      <path d="M60 530 Q180 525 300 530 T540 530 T780 530 T1140 530" stroke="#FFE9B0" stroke-width="1.5" fill="none" opacity="0.5"/>
+
+      <!-- atmospheric haze behind the plant -->
+      <ellipse cx="600" cy="340" rx="380" ry="260" fill="url(#hazeWarm)"/>
     </g>
 
+    <!-- ===== SKY: ok / soft afternoon ===== -->
     <g class="sky-layer" id="sky-ok" style="opacity:0;">
       <rect x="60" y="40" width="1080" height="560" fill="url(#skyOk)"/>
-      <!-- soft sun -->
-      <circle cx="950" cy="180" r="160" fill="url(#sunGlow)" opacity="0.7"/>
-      <circle cx="950" cy="180" r="55" fill="#FFF1C2"/>
-      <!-- few soft clouds -->
-      <g fill="#FFF7EC" opacity="0.85">
-        <ellipse cx="180" cy="160" rx="60" ry="20"/>
-        <ellipse cx="220" cy="150" rx="45" ry="18"/>
-        <ellipse cx="780" cy="220" rx="70" ry="22"/>
-        <ellipse cx="830" cy="210" rx="50" ry="18"/>
+
+      <!-- soft sun upper right -->
+      <circle cx="950" cy="180" r="180" fill="url(#sunGlow)" opacity="0.75"/>
+      <circle cx="950" cy="180" r="60" fill="#FFF1C2"/>
+      <circle cx="950" cy="180" r="38" fill="#FFE08A" opacity="0.8"/>
+
+      <!-- a few painterly clouds -->
+      <g fill="#FFF7EC" opacity="0.88">
+        <ellipse cx="180" cy="160" rx="62" ry="20"/>
+        <ellipse cx="222" cy="148" rx="46" ry="18"/>
+        <ellipse cx="780" cy="220" rx="72" ry="22"/>
+        <ellipse cx="830" cy="208" rx="50" ry="18"/>
       </g>
+
       <!-- hills -->
       <path d="M60 440 Q200 380 360 420 Q520 390 700 430 Q880 400 1000 425 Q1100 435 1140 430 L1140 600 L60 600 Z"
             fill="#9BBE94" opacity="0.7"/>
       <path d="M60 490 Q220 450 400 480 Q580 460 760 485 Q940 465 1140 490 L1140 600 L60 600 Z"
-            fill="#6F9572" opacity="0.8"/>
-      <!-- rooftops -->
-      <g fill="#5E5040" opacity="0.85">
-        <rect x="100" y="445" width="22" height="48"/>
-        <polygon points="100,445 111,433 122,445"/>
-        <rect x="145" y="455" width="18" height="38"/>
-        <polygon points="145,455 154,443 163,455"/>
-        <rect x="900" y="448" width="20" height="42"/>
-        <polygon points="900,448 910,435 920,448"/>
-        <rect x="935" y="440" width="24" height="50"/>
-        <polygon points="935,440 947,425 959,440"/>
-        <rect x="975" y="450" width="18" height="40"/>
-        <polygon points="975,450 984,437 993,450"/>
-        <rect x="1010" y="455" width="20" height="35"/>
-        <polygon points="1010,455 1020,443 1030,455"/>
-      </g>
+            fill="#6F9572" opacity="0.78"/>
+
+      <!-- distant town: same soft ridge, greener tone -->
+      <path d="M60 470
+               L150 470 L156 458 L172 458 L178 470
+               L260 470 L268 452 L284 452 L292 470
+               L360 470 L460 472 L468 460 L482 460 L490 472
+               L620 472 L740 470 L748 456 L760 456 L766 470
+               L820 470 L830 448 L846 448 L854 470
+               L920 470 L930 460 L948 460 L956 470
+               L1040 470 L1050 452 L1066 452 L1074 470
+               L1140 470 L1140 500 L60 500 Z"
+            fill="#4E5040" opacity="0.5"/>
+
       <!-- sea -->
       <rect x="60" y="500" width="1080" height="100" fill="#7FA2B8" opacity="0.55"/>
       <path d="M60 510 Q180 505 300 510 T540 510 T780 510 T1140 510" stroke="#FFF7EC" stroke-width="2" fill="none" opacity="0.7"/>
-      <path d="M60 530 Q180 525 300 530 T540 530 T780 530 T1140 530" stroke="#FFF7EC" stroke-width="1.5" fill="none" opacity="0.5"/>
+      <path d="M60 532 Q180 527 300 532 T540 532 T780 532 T1140 532" stroke="#FFF7EC" stroke-width="1.5" fill="none" opacity="0.5"/>
+
+      <!-- light shafts: gentler -->
+      <g opacity="0.7">
+        <polygon points="700,40 820,40 600,600 520,600" fill="url(#sunShaftSoft)"/>
+        <polygon points="860,40 920,40 720,600 660,600" fill="url(#sunShaftSoft)"/>
+      </g>
+
+      <!-- haze -->
+      <ellipse cx="600" cy="340" rx="380" ry="260" fill="url(#hazeWarm)" opacity="0.7"/>
     </g>
 
+    <!-- ===== SKY: moist / overcast ===== -->
     <g class="sky-layer" id="sky-moist" style="opacity:0;">
       <rect x="60" y="40" width="1080" height="560" fill="url(#skyMoist)"/>
-      <!-- lots of soft clouds -->
-      <g fill="#FFFFFF" opacity="0.9">
+
+      <!-- soft clouds blanket -->
+      <g fill="#FFFFFF" opacity="0.88">
         <ellipse cx="160" cy="150" rx="80" ry="28"/>
         <ellipse cx="220" cy="135" rx="60" ry="22"/>
         <ellipse cx="110" cy="140" rx="45" ry="18"/>
@@ -856,29 +989,39 @@ function buildHeroSvg() {
         <ellipse cx="840" cy="165" rx="65" ry="24"/>
         <ellipse cx="730" cy="170" rx="50" ry="20"/>
         <ellipse cx="1050" cy="200" rx="70" ry="24"/>
+        <ellipse cx="450" cy="200" rx="80" ry="22"/>
       </g>
+
       <!-- hills -->
       <path d="M60 440 Q200 380 360 420 Q520 390 700 430 Q880 400 1000 425 Q1100 435 1140 430 L1140 600 L60 600 Z"
-            fill="#7A8C7C" opacity="0.6"/>
+            fill="#7A8C7C" opacity="0.55"/>
       <path d="M60 490 Q220 450 400 480 Q580 460 760 485 Q940 465 1140 490 L1140 600 L60 600 Z"
             fill="#5A6E5F" opacity="0.7"/>
-      <!-- rooftops -->
-      <g fill="#3F4A48" opacity="0.85">
-        <rect x="100" y="445" width="22" height="48"/>
-        <polygon points="100,445 111,433 122,445"/>
-        <rect x="900" y="448" width="20" height="42"/>
-        <polygon points="900,448 910,435 920,448"/>
-        <rect x="935" y="440" width="24" height="50"/>
-        <polygon points="935,440 947,425 959,440"/>
-        <rect x="975" y="450" width="18" height="40"/>
-        <polygon points="975,450 984,437 993,450"/>
-      </g>
+
+      <!-- distant town: cool muted silhouette -->
+      <path d="M60 470
+               L150 470 L156 458 L172 458 L178 470
+               L260 470 L268 452 L284 452 L292 470
+               L360 470 L460 472 L468 460 L482 460 L490 472
+               L620 472 L740 470 L748 456 L760 456 L766 470
+               L820 470 L830 448 L846 448 L854 470
+               L920 470 L930 460 L948 460 L956 470
+               L1040 470 L1050 452 L1066 452 L1074 470
+               L1140 470 L1140 500 L60 500 Z"
+            fill="#3F4A48" opacity="0.55"/>
+
       <!-- sea -->
       <rect x="60" y="500" width="1080" height="100" fill="#8B98A4" opacity="0.6"/>
       <path d="M60 515 Q180 510 300 515 T540 515 T780 515 T1140 515" stroke="#FFFFFF" stroke-width="2" fill="none" opacity="0.5"/>
 
+      <!-- gentle diffused light shaft -->
+      <polygon points="500,40 700,40 720,600 480,600" fill="url(#rainShaft)"/>
+
+      <!-- haze, cool -->
+      <ellipse cx="600" cy="340" rx="380" ry="260" fill="url(#hazeCool)" opacity="0.7"/>
+
       <!-- dewdrops on window glass -->
-      <g fill="#FFFFFF" opacity="0.7">
+      <g fill="#FFFFFF" opacity="0.6">
         <ellipse cx="150" cy="380" rx="4" ry="6"/>
         <ellipse cx="165" cy="395" rx="3" ry="4"/>
         <ellipse cx="1000" cy="350" rx="5" ry="7"/>
@@ -887,8 +1030,10 @@ function buildHeroSvg() {
       </g>
     </g>
 
+    <!-- ===== SKY: wet / soft rainy-day light through misted glass ===== -->
     <g class="sky-layer" id="sky-wet" style="opacity:0;">
       <rect x="60" y="40" width="1080" height="560" fill="url(#skyWet)"/>
+
       <!-- heavy clouds -->
       <g fill="#6A7785" opacity="0.95">
         <ellipse cx="160" cy="140" rx="90" ry="32"/>
@@ -898,54 +1043,61 @@ function buildHeroSvg() {
         <ellipse cx="850" cy="155" rx="70" ry="26"/>
         <ellipse cx="730" cy="160" rx="55" ry="22"/>
         <ellipse cx="1050" cy="180" rx="78" ry="26"/>
+        <ellipse cx="470" cy="170" rx="85" ry="24"/>
       </g>
+
       <!-- darker hills -->
       <path d="M60 440 Q200 380 360 420 Q520 390 700 430 Q880 400 1000 425 Q1100 435 1140 430 L1140 600 L60 600 Z"
             fill="#4F5C66" opacity="0.7"/>
       <path d="M60 490 Q220 450 400 480 Q580 460 760 485 Q940 465 1140 490 L1140 600 L60 600 Z"
             fill="#36444F" opacity="0.8"/>
-      <!-- rooftops -->
-      <g fill="#23303B" opacity="0.9">
-        <rect x="100" y="445" width="22" height="48"/>
-        <polygon points="100,445 111,433 122,445"/>
-        <rect x="900" y="448" width="20" height="42"/>
-        <polygon points="900,448 910,435 920,448"/>
-        <rect x="935" y="440" width="24" height="50"/>
-        <polygon points="935,440 947,425 959,440"/>
-        <rect x="975" y="450" width="18" height="40"/>
-        <polygon points="975,450 984,437 993,450"/>
-      </g>
+
+      <!-- distant town: a darker silhouette ridge -->
+      <path d="M60 470
+               L150 470 L156 458 L172 458 L178 470
+               L260 470 L268 452 L284 452 L292 470
+               L360 470 L460 472 L468 460 L482 460 L490 472
+               L620 472 L740 470 L748 456 L760 456 L766 470
+               L820 470 L830 448 L846 448 L854 470
+               L920 470 L930 460 L948 460 L956 470
+               L1040 470 L1050 452 L1066 452 L1074 470
+               L1140 470 L1140 500 L60 500 Z"
+            fill="#23303B" opacity="0.7"/>
+
       <!-- dark sea -->
       <rect x="60" y="500" width="1080" height="100" fill="#4E5B68" opacity="0.7"/>
 
-      <!-- rain streaks across the whole window -->
-      <g stroke="#E6F0F8" stroke-width="1.5" opacity="0.55">
+      <!-- diffused misted-glass light shafts (very soft) -->
+      <polygon points="380,40 620,40 720,600 320,600" fill="url(#rainShaft)" opacity="0.7"/>
+
+      <!-- misty haze -->
+      <ellipse cx="600" cy="340" rx="380" ry="260" fill="url(#hazeCool)" opacity="0.85"/>
+
+      <!-- soft rain streaks across the whole window (thinner, fewer, gentler) -->
+      <g stroke="#E6F0F8" stroke-width="1.2" opacity="0.45" stroke-linecap="round">
         <line x1="120" y1="60" x2="100" y2="140"/>
-        <line x1="180" y1="80" x2="160" y2="160"/>
-        <line x1="240" y1="60" x2="220" y2="150"/>
-        <line x1="300" y1="100" x2="280" y2="180"/>
-        <line x1="360" y1="60" x2="340" y2="140"/>
-        <line x1="420" y1="90" x2="400" y2="170"/>
-        <line x1="480" y1="70" x2="460" y2="150"/>
-        <line x1="540" y1="100" x2="520" y2="180"/>
-        <line x1="600" y1="60" x2="580" y2="140"/>
-        <line x1="660" y1="80" x2="640" y2="160"/>
-        <line x1="720" y1="70" x2="700" y2="150"/>
-        <line x1="780" y1="100" x2="760" y2="180"/>
-        <line x1="840" y1="60" x2="820" y2="140"/>
-        <line x1="900" y1="80" x2="880" y2="160"/>
-        <line x1="960" y1="70" x2="940" y2="150"/>
-        <line x1="1020" y1="100" x2="1000" y2="180"/>
+        <line x1="200" y1="80" x2="180" y2="160"/>
+        <line x1="280" y1="60" x2="260" y2="150"/>
+        <line x1="360" y1="100" x2="340" y2="180"/>
+        <line x1="440" y1="60" x2="420" y2="140"/>
+        <line x1="520" y1="90" x2="500" y2="170"/>
+        <line x1="600" y1="70" x2="580" y2="150"/>
+        <line x1="680" y1="100" x2="660" y2="180"/>
+        <line x1="760" y1="60" x2="740" y2="140"/>
+        <line x1="840" y1="80" x2="820" y2="160"/>
+        <line x1="920" y1="70" x2="900" y2="150"/>
+        <line x1="1000" y1="100" x2="980" y2="180"/>
         <line x1="1080" y1="60" x2="1060" y2="140"/>
-        <line x1="130" y1="220" x2="110" y2="300"/>
-        <line x1="280" y1="240" x2="260" y2="320"/>
-        <line x1="900" y1="220" x2="880" y2="300"/>
-        <line x1="1050" y1="240" x2="1030" y2="320"/>
-        <line x1="160" y1="370" x2="140" y2="450"/>
-        <line x1="1000" y1="370" x2="980" y2="450"/>
+        <line x1="160" y1="260" x2="140" y2="340"/>
+        <line x1="320" y1="280" x2="300" y2="360"/>
+        <line x1="900" y1="260" x2="880" y2="340"/>
+        <line x1="1050" y1="280" x2="1030" y2="360"/>
+        <line x1="200" y1="420" x2="180" y2="490"/>
+        <line x1="980" y1="420" x2="960" y2="490"/>
       </g>
-      <!-- raindrops on glass -->
-      <g fill="#E6F0F8" opacity="0.85">
+
+      <!-- raindrops misted on glass -->
+      <g fill="#E6F0F8" opacity="0.8">
         <ellipse cx="140" cy="360" rx="6" ry="9"/>
         <path d="M140 369 Q142 380 138 388 Q136 384 140 369 Z"/>
         <ellipse cx="200" cy="320" rx="4" ry="6"/>
@@ -964,117 +1116,256 @@ function buildHeroSvg() {
     </g>
   </g>
 
-  <!-- WINDOW FRAME (over the sky) — mullions sit symmetrically, leaving a clear vertical bay for the plant -->
+  <!-- ===================================================== -->
+  <!-- WINDOW FRAME — horizontal mullion removed.              -->
+  <!-- Only outer frame + two vertical mullions remain so the   -->
+  <!-- plant's foliage can rise unbroken.                      -->
+  <!-- ===================================================== -->
   <!-- outer frame -->
   <rect x="48" y="28" width="1104" height="584" rx="26" fill="none" stroke="url(#frameGrad)" stroke-width="22"/>
   <!-- two vertical mullions framing the plant's bay -->
   <line x1="420" y1="40" x2="420" y2="600" stroke="url(#frameGrad)" stroke-width="14"/>
   <line x1="780" y1="40" x2="780" y2="600" stroke="url(#frameGrad)" stroke-width="14"/>
-  <!-- horizontal mullion, pushed high so the plant has a tall central pane -->
-  <line x1="60" y1="200" x2="1140" y2="200" stroke="url(#frameGrad)" stroke-width="12"/>
-  <!-- inner highlight -->
-  <rect x="60" y="40" width="1080" height="560" rx="20" fill="none" stroke="#FFF7EC" stroke-width="1.5" opacity="0.45"/>
+  <!-- inner highlight (catches the light) -->
+  <rect x="60" y="40" width="1080" height="560" rx="20" fill="none" stroke="#FFF7EC" stroke-width="1.5" opacity="0.55"/>
+  <!-- subtle warm rim on the right side of each mullion (lit by the sun) -->
+  <line x1="427" y1="40" x2="427" y2="600" stroke="#FFE2B6" stroke-width="2" opacity="0.45"/>
+  <line x1="787" y1="40" x2="787" y2="600" stroke="#FFE2B6" stroke-width="2" opacity="0.35"/>
 
-  <!-- WINDOWSILL (foreground) -->
+  <!-- ===================================================== -->
+  <!-- WINDOWSILL with warm light pool                         -->
+  <!-- ===================================================== -->
   <rect x="20" y="595" width="1160" height="58" rx="8" fill="url(#sillGrad)" filter="url(#softShadow)"/>
   <rect x="20" y="595" width="1160" height="6" fill="#C99070" opacity="0.7"/>
   <!-- wood grain -->
-  <g opacity="0.2" stroke="#3F2616" stroke-width="0.8" fill="none">
+  <g opacity="0.22" stroke="#3F2616" stroke-width="0.8" fill="none">
     <path d="M40 620 Q300 615 600 622 Q900 618 1160 622"/>
     <path d="M40 632 Q300 628 600 634 Q900 630 1160 633"/>
     <path d="M40 644 Q300 640 600 646 Q900 642 1160 645"/>
   </g>
-  <!-- knots in the wood -->
+  <!-- knots -->
   <ellipse cx="180" cy="625" rx="6" ry="3" fill="#5E3A24" opacity="0.25"/>
   <ellipse cx="980" cy="635" rx="5" ry="2.5" fill="#5E3A24" opacity="0.25"/>
+
+  <!-- WARM LIGHT POOL on the sill — the hero atmospheric effect.
+       A wide soft pool centered slightly left (because sun is biased left in dry/ok).
+       Mood layers toggle these via opacity. -->
+  <g id="sill-warm" class="sky-layer">
+    <ellipse cx="500" cy="595" rx="520" ry="60" fill="url(#sillLightWarm)"/>
+    <ellipse cx="500" cy="595" rx="280" ry="40" fill="url(#sillLightWarm)" opacity="0.6"/>
+  </g>
+  <g id="sill-soft" class="sky-layer" style="opacity:0;">
+    <ellipse cx="600" cy="595" rx="520" ry="60" fill="url(#sillLightSoft)"/>
+  </g>
+  <g id="sill-cool" class="sky-layer" style="opacity:0;">
+    <ellipse cx="600" cy="595" rx="520" ry="60" fill="url(#sillLightCool)"/>
+  </g>
 
   <!-- room floor / counter -->
   <rect x="0" y="653" width="1200" height="97" fill="#D9B186"/>
   <rect x="0" y="653" width="1200" height="8" fill="#B58860" opacity="0.7"/>
+  <!-- light spill onto the floor in front of the window -->
+  <g id="floor-warm" class="sky-layer">
+    <ellipse cx="500" cy="690" rx="520" ry="50" fill="url(#sillLightWarm)" opacity="0.6"/>
+  </g>
+  <g id="floor-soft" class="sky-layer" style="opacity:0;">
+    <ellipse cx="600" cy="690" rx="520" ry="50" fill="url(#sillLightSoft)" opacity="0.7"/>
+  </g>
+  <g id="floor-cool" class="sky-layer" style="opacity:0;">
+    <ellipse cx="600" cy="690" rx="520" ry="50" fill="url(#sillLightCool)" opacity="0.7"/>
+  </g>
 
-  <!-- HERO POTTED PLANT — center vertical axis, dominating the composition -->
+  <!-- ===================================================== -->
+  <!-- DUST MOTES drifting in the warm air (only on dry/ok)    -->
+  <!-- ===================================================== -->
+  <g id="dust-warm" class="sky-layer" fill="#FFEAB8">
+    <circle cx="380" cy="200" r="2" opacity="0.7"/>
+    <circle cx="540" cy="120" r="1.6" opacity="0.55"/>
+    <circle cx="700" cy="260" r="2.2" opacity="0.65"/>
+    <circle cx="820" cy="180" r="1.4" opacity="0.5"/>
+    <circle cx="460" cy="340" r="1.8" opacity="0.6"/>
+    <circle cx="640" cy="420" r="2" opacity="0.55"/>
+  </g>
+
+  <!-- ===================================================== -->
+  <!-- HERO POTTED PLANT — rim-lit, central, dominant         -->
+  <!-- ===================================================== -->
   <g filter="url(#softShadow)">
 
     <!-- soft cast shadow under pot on sill -->
-    <ellipse cx="600" cy="595" rx="160" ry="10" fill="#3F2616" opacity="0.18"/>
+    <ellipse cx="600" cy="595" rx="160" ry="10" fill="#3F2616" opacity="0.22"/>
 
-    <!-- ===== FOLIAGE: built up in layers, back to front ===== -->
+    <!-- ===== STEMS gathering at the pot mouth (drawn FIRST so leaves overlay) ===== -->
+    <g stroke="#4F6A3A" stroke-width="3.5" fill="none" stroke-linecap="round" opacity="0.95">
+      <path d="M600 445 Q602 410 600 360"/>
+      <path d="M600 445 Q576 410 540 360"/>
+      <path d="M600 445 Q624 410 660 360"/>
+      <path d="M600 445 Q566 405 490 350"/>
+      <path d="M600 445 Q634 405 710 350"/>
+      <path d="M600 445 Q588 400 560 330"/>
+      <path d="M600 445 Q612 400 640 330"/>
+    </g>
 
-    <!-- deep back leaves (darkest, silhouetted) -->
+    <!-- ===== FOLIAGE — individually shaped leaves built back-to-front =====
+         Each <use href="#leafShape" .../> places a teardrop leaf at (x,y)
+         scaled and rotated.  Veins are drawn over each with matching transform. -->
+
+    <!-- BACK LAYER: darkest, behind everything — silhouetted -->
     <g>
-      <ellipse cx="470" cy="180" rx="38" ry="100" fill="url(#leafDark)" transform="rotate(-32 470 180)"/>
-      <ellipse cx="730" cy="180" rx="38" ry="100" fill="url(#leafDark)" transform="rotate(32 730 180)"/>
-      <ellipse cx="600" cy="105" rx="38" ry="118" fill="url(#leafDark)"/>
-      <ellipse cx="540" cy="150" rx="34" ry="98" fill="url(#leafDark)" transform="rotate(-15 540 150)"/>
-      <ellipse cx="660" cy="150" rx="34" ry="98" fill="url(#leafDark)" transform="rotate(15 660 150)"/>
+      <!-- back-left -->
+      <g transform="translate(522 340) rotate(-22) scale(0.85 1.05)">
+        <use href="#leafShape" fill="url(#leafDark)"/>
+        <use href="#leafShape" fill="url(#leafRim)" opacity="0.5"/>
+        <use href="#leafVein" stroke="#2A3E1F" stroke-width="1.2" opacity="0.55"/>
+        <path d="M0 -50 Q -12 -55 -22 -65" stroke="#2A3E1F" stroke-width="0.8" fill="none" opacity="0.45"/>
+        <path d="M0 -100 Q -14 -108 -28 -118" stroke="#2A3E1F" stroke-width="0.8" fill="none" opacity="0.45"/>
+        <path d="M0 -140 Q -10 -148 -20 -155" stroke="#2A3E1F" stroke-width="0.8" fill="none" opacity="0.45"/>
+      </g>
+      <!-- back-right -->
+      <g transform="translate(678 340) rotate(22) scale(0.85 1.05)">
+        <use href="#leafShape" fill="url(#leafDark)"/>
+        <use href="#leafShape" fill="url(#leafRim)" opacity="0.55"/>
+        <use href="#leafVein" stroke="#2A3E1F" stroke-width="1.2" opacity="0.55"/>
+        <path d="M0 -50 Q 12 -55 22 -65" stroke="#2A3E1F" stroke-width="0.8" fill="none" opacity="0.45"/>
+        <path d="M0 -100 Q 14 -108 28 -118" stroke="#2A3E1F" stroke-width="0.8" fill="none" opacity="0.45"/>
+        <path d="M0 -140 Q 10 -148 20 -155" stroke="#2A3E1F" stroke-width="0.8" fill="none" opacity="0.45"/>
+      </g>
+      <!-- back-center, the tallest -->
+      <g transform="translate(600 360) rotate(0) scale(0.95 1.15)">
+        <use href="#leafShape" fill="url(#leafDark)"/>
+        <use href="#leafShape" fill="url(#leafRim)" opacity="0.6"/>
+        <use href="#leafVein" stroke="#2A3E1F" stroke-width="1.2" opacity="0.55"/>
+        <path d="M0 -55 Q 13 -60 24 -68" stroke="#2A3E1F" stroke-width="0.8" fill="none" opacity="0.45"/>
+        <path d="M0 -105 Q 14 -112 28 -120" stroke="#2A3E1F" stroke-width="0.8" fill="none" opacity="0.45"/>
+        <path d="M0 -55 Q -13 -60 -24 -68" stroke="#2A3E1F" stroke-width="0.8" fill="none" opacity="0.45"/>
+        <path d="M0 -105 Q -14 -112 -28 -120" stroke="#2A3E1F" stroke-width="0.8" fill="none" opacity="0.45"/>
+      </g>
     </g>
 
-    <!-- mid layer leaves (medium green) -->
+    <!-- MID LAYER: medium green, broad reach -->
     <g>
-      <ellipse cx="430" cy="240" rx="42" ry="110" fill="url(#leafA)" transform="rotate(-42 430 240)"/>
-      <ellipse cx="770" cy="240" rx="42" ry="110" fill="url(#leafA)" transform="rotate(42 770 240)"/>
-      <ellipse cx="500" cy="200" rx="38" ry="115" fill="url(#leafA)" transform="rotate(-22 500 200)"/>
-      <ellipse cx="700" cy="200" rx="38" ry="115" fill="url(#leafA)" transform="rotate(22 700 200)"/>
-      <ellipse cx="600" cy="165" rx="36" ry="132" fill="url(#leafA)"/>
-      <ellipse cx="565" cy="220" rx="32" ry="108" fill="url(#leafA)" transform="rotate(-8 565 220)"/>
-      <ellipse cx="635" cy="220" rx="32" ry="108" fill="url(#leafA)" transform="rotate(8 635 220)"/>
+      <!-- mid far-left, arcing outward -->
+      <g transform="translate(480 380) rotate(-48) scale(0.9 1.0)">
+        <use href="#leafShape" fill="url(#leafA)"/>
+        <use href="#leafShape" fill="url(#leafRim)" opacity="0.45"/>
+        <use href="#leafVein" stroke="#34501F" stroke-width="1.1" opacity="0.55"/>
+        <path d="M0 -60 Q 12 -66 24 -74" stroke="#34501F" stroke-width="0.7" fill="none" opacity="0.45"/>
+        <path d="M0 -110 Q 14 -118 28 -126" stroke="#34501F" stroke-width="0.7" fill="none" opacity="0.45"/>
+      </g>
+      <!-- mid far-right, arcing outward -->
+      <g transform="translate(720 380) rotate(48) scale(0.9 1.0)">
+        <use href="#leafShape" fill="url(#leafA)"/>
+        <use href="#leafShape" fill="url(#leafRim)" opacity="0.55"/>
+        <use href="#leafVein" stroke="#34501F" stroke-width="1.1" opacity="0.55"/>
+        <path d="M0 -60 Q -12 -66 -24 -74" stroke="#34501F" stroke-width="0.7" fill="none" opacity="0.45"/>
+        <path d="M0 -110 Q -14 -118 -28 -126" stroke="#34501F" stroke-width="0.7" fill="none" opacity="0.45"/>
+      </g>
+      <!-- mid-left, more upright -->
+      <g transform="translate(545 380) rotate(-26) scale(0.85 1.05)">
+        <use href="#leafShape" fill="url(#leafA)"/>
+        <use href="#leafShape" fill="url(#leafRim)" opacity="0.5"/>
+        <use href="#leafVein" stroke="#34501F" stroke-width="1.1" opacity="0.55"/>
+        <path d="M0 -70 Q 13 -76 26 -84" stroke="#34501F" stroke-width="0.7" fill="none" opacity="0.45"/>
+        <path d="M0 -120 Q 14 -128 28 -136" stroke="#34501F" stroke-width="0.7" fill="none" opacity="0.45"/>
+      </g>
+      <!-- mid-right, more upright -->
+      <g transform="translate(655 380) rotate(26) scale(0.85 1.05)">
+        <use href="#leafShape" fill="url(#leafA)"/>
+        <use href="#leafShape" fill="url(#leafRim)" opacity="0.6"/>
+        <use href="#leafVein" stroke="#34501F" stroke-width="1.1" opacity="0.55"/>
+        <path d="M0 -70 Q -13 -76 -26 -84" stroke="#34501F" stroke-width="0.7" fill="none" opacity="0.45"/>
+        <path d="M0 -120 Q -14 -128 -28 -136" stroke="#34501F" stroke-width="0.7" fill="none" opacity="0.45"/>
+      </g>
     </g>
 
-    <!-- front layer leaves (lighter, catching light) -->
+    <!-- FRONT LAYER: lighter green, in front -->
     <g>
-      <ellipse cx="455" cy="290" rx="36" ry="100" fill="url(#leafB)" transform="rotate(-48 455 290)"/>
-      <ellipse cx="745" cy="290" rx="36" ry="100" fill="url(#leafB)" transform="rotate(48 745 290)"/>
-      <ellipse cx="520" cy="260" rx="34" ry="105" fill="url(#leafB)" transform="rotate(-28 520 260)"/>
-      <ellipse cx="680" cy="260" rx="34" ry="105" fill="url(#leafB)" transform="rotate(28 680 260)"/>
-      <ellipse cx="600" cy="235" rx="30" ry="108" fill="url(#leafB)"/>
-      <ellipse cx="585" cy="280" rx="28" ry="95" fill="url(#leafB)" transform="rotate(-12 585 280)"/>
-      <ellipse cx="615" cy="280" rx="28" ry="95" fill="url(#leafB)" transform="rotate(12 615 280)"/>
+      <!-- front-left, more horizontal -->
+      <g transform="translate(500 405) rotate(-72) scale(0.7 0.85)">
+        <use href="#leafShapeNarrow" fill="url(#leafB)"/>
+        <use href="#leafShapeNarrow" fill="url(#leafRim)" opacity="0.45"/>
+        <use href="#leafVein" stroke="#3D5A2C" stroke-width="1" opacity="0.55"/>
+        <path d="M0 -70 Q 10 -76 20 -82" stroke="#3D5A2C" stroke-width="0.6" fill="none" opacity="0.45"/>
+      </g>
+      <!-- front-right, more horizontal -->
+      <g transform="translate(700 405) rotate(72) scale(0.7 0.85)">
+        <use href="#leafShapeNarrow" fill="url(#leafB)"/>
+        <use href="#leafShapeNarrow" fill="url(#leafRim)" opacity="0.55"/>
+        <use href="#leafVein" stroke="#3D5A2C" stroke-width="1" opacity="0.55"/>
+        <path d="M0 -70 Q -10 -76 -20 -82" stroke="#3D5A2C" stroke-width="0.6" fill="none" opacity="0.45"/>
+      </g>
+      <!-- front-left-mid, angled out -->
+      <g transform="translate(570 400) rotate(-12) scale(0.78 0.95)">
+        <use href="#leafShape" fill="url(#leafB)"/>
+        <use href="#leafShape" fill="url(#leafRim)" opacity="0.5"/>
+        <use href="#leafVein" stroke="#3D5A2C" stroke-width="1" opacity="0.55"/>
+        <path d="M0 -65 Q 12 -72 24 -80" stroke="#3D5A2C" stroke-width="0.7" fill="none" opacity="0.45"/>
+        <path d="M0 -115 Q 14 -123 28 -130" stroke="#3D5A2C" stroke-width="0.7" fill="none" opacity="0.45"/>
+      </g>
+      <!-- front-right-mid -->
+      <g transform="translate(630 400) rotate(12) scale(0.78 0.95)">
+        <use href="#leafShape" fill="url(#leafB)"/>
+        <use href="#leafShape" fill="url(#leafRim)" opacity="0.6"/>
+        <use href="#leafVein" stroke="#3D5A2C" stroke-width="1" opacity="0.55"/>
+        <path d="M0 -65 Q -12 -72 -24 -80" stroke="#3D5A2C" stroke-width="0.7" fill="none" opacity="0.45"/>
+        <path d="M0 -115 Q -14 -123 -28 -130" stroke="#3D5A2C" stroke-width="0.7" fill="none" opacity="0.45"/>
+      </g>
+      <!-- front-center, taller -->
+      <g transform="translate(600 415) rotate(2) scale(0.8 1.0)">
+        <use href="#leafShape" fill="url(#leafB)"/>
+        <use href="#leafShape" fill="url(#leafRim)" opacity="0.65"/>
+        <use href="#leafVein" stroke="#3D5A2C" stroke-width="1" opacity="0.55"/>
+        <path d="M0 -70 Q 12 -76 24 -82" stroke="#3D5A2C" stroke-width="0.7" fill="none" opacity="0.45"/>
+        <path d="M0 -70 Q -12 -76 -24 -82" stroke="#3D5A2C" stroke-width="0.7" fill="none" opacity="0.45"/>
+        <path d="M0 -125 Q 12 -133 24 -140" stroke="#3D5A2C" stroke-width="0.7" fill="none" opacity="0.45"/>
+        <path d="M0 -125 Q -12 -133 -24 -140" stroke="#3D5A2C" stroke-width="0.7" fill="none" opacity="0.45"/>
+      </g>
     </g>
 
-    <!-- topmost highlights (lightest, sunlit edges) -->
-    <g opacity="0.85">
-      <ellipse cx="535" cy="300" rx="20" ry="60" fill="url(#leafC)" transform="rotate(-32 535 300)"/>
-      <ellipse cx="665" cy="300" rx="20" ry="60" fill="url(#leafC)" transform="rotate(32 665 300)"/>
-      <ellipse cx="600" cy="275" rx="18" ry="70" fill="url(#leafC)"/>
-      <ellipse cx="500" cy="340" rx="16" ry="50" fill="url(#leafC)" transform="rotate(-40 500 340)"/>
-      <ellipse cx="700" cy="340" rx="16" ry="50" fill="url(#leafC)" transform="rotate(40 700 340)"/>
-    </g>
-
-    <!-- a few outward-reaching leaves that arc gracefully -->
+    <!-- TOPMOST highlights — small lighter leaves crowning the plant, sunlit -->
     <g>
-      <path d="M600 380 Q400 320 360 200 Q380 270 470 320 Q540 360 600 380 Z" fill="url(#leafA)" opacity="0.9"/>
-      <path d="M600 380 Q800 320 840 200 Q820 270 730 320 Q660 360 600 380 Z" fill="url(#leafA)" opacity="0.9"/>
+      <g transform="translate(560 350) rotate(-18) scale(0.55 0.7)">
+        <use href="#leafShapeNarrow" fill="url(#leafC)"/>
+        <use href="#leafShapeNarrow" fill="url(#leafRim)" opacity="0.6"/>
+        <use href="#leafVein" stroke="#3D5A2C" stroke-width="0.8" opacity="0.5"/>
+      </g>
+      <g transform="translate(640 350) rotate(18) scale(0.55 0.7)">
+        <use href="#leafShapeNarrow" fill="url(#leafC)"/>
+        <use href="#leafShapeNarrow" fill="url(#leafRim)" opacity="0.7"/>
+        <use href="#leafVein" stroke="#3D5A2C" stroke-width="0.8" opacity="0.5"/>
+      </g>
+      <g transform="translate(600 335) rotate(0) scale(0.5 0.7)">
+        <use href="#leafShapeNarrow" fill="url(#leafC)"/>
+        <use href="#leafShapeNarrow" fill="url(#leafRim)" opacity="0.7"/>
+        <use href="#leafVein" stroke="#3D5A2C" stroke-width="0.8" opacity="0.5"/>
+      </g>
     </g>
 
-    <!-- leaf veins (subtle) -->
-    <g stroke="#3F5530" stroke-width="0.8" fill="none" opacity="0.4">
-      <path d="M470 180 Q470 230 470 320"/>
-      <path d="M730 180 Q730 230 730 320"/>
-      <path d="M600 115 Q600 220 600 360"/>
-      <path d="M540 150 Q540 230 540 340"/>
-      <path d="M660 150 Q660 230 660 340"/>
-      <path d="M430 240 Q455 290 480 340"/>
-      <path d="M770 240 Q745 290 720 340"/>
+    <!-- A couple of small "baby" leaves near the soil — adds depth and age -->
+    <g>
+      <g transform="translate(560 430) rotate(-78) scale(0.4 0.5)">
+        <use href="#leafShapeNarrow" fill="url(#leafB)"/>
+        <use href="#leafShapeNarrow" fill="url(#leafRim)" opacity="0.4"/>
+      </g>
+      <g transform="translate(640 430) rotate(78) scale(0.4 0.5)">
+        <use href="#leafShapeNarrow" fill="url(#leafB)"/>
+        <use href="#leafShapeNarrow" fill="url(#leafRim)" opacity="0.5"/>
+      </g>
     </g>
 
-    <!-- stems gathering at the pot mouth -->
-    <g stroke="#5E7D4A" stroke-width="3.5" fill="none" stroke-linecap="round">
-      <path d="M600 445 Q605 420 600 380"/>
-      <path d="M600 445 Q570 420 540 380"/>
-      <path d="M600 445 Q630 420 660 380"/>
-      <path d="M600 445 Q580 415 500 380"/>
-      <path d="M600 445 Q620 415 700 380"/>
-    </g>
-
-    <!-- ===== TALL TERRACOTTA POT ===== -->
+    <!-- ===== TALL TERRACOTTA POT — rim-lit by the window light ===== -->
     <!-- pot body, tapered slightly -->
     <path d="M510 450 L690 450 L674 590 L526 590 Z" fill="url(#potGrad)"/>
-    <!-- pot side highlight band (warm rim of light) -->
-    <path d="M515 460 L525 580" stroke="#E89A78" stroke-width="6" fill="none" opacity="0.55" stroke-linecap="round"/>
-    <path d="M685 460 Q683 520 678 580" stroke="#7D3618" stroke-width="5" fill="none" opacity="0.5" stroke-linecap="round"/>
-    <!-- pot rim -->
+    <!-- pot left rim-light (warm side, facing the sun) -->
+    <path d="M516 460 Q518 520 524 580" stroke="#FFD4A8" stroke-width="6" fill="none" opacity="0.7" stroke-linecap="round"/>
+    <path d="M520 462 Q521 520 526 580" stroke="#FFE9C6" stroke-width="2" fill="none" opacity="0.55" stroke-linecap="round"/>
+    <!-- pot right shadow side -->
+    <path d="M684 460 Q682 520 676 580" stroke="#7D3618" stroke-width="6" fill="none" opacity="0.55" stroke-linecap="round"/>
+    <!-- pot rim (top band) -->
     <rect x="500" y="438" width="200" height="18" rx="4" fill="#C75A3A"/>
     <rect x="500" y="438" width="200" height="6" fill="#E89A78" opacity="0.7"/>
+    <!-- warm highlight on top of rim catching the light -->
+    <rect x="504" y="438" width="170" height="3" fill="#FFE6BC" opacity="0.7"/>
     <!-- inner pot shadow (soil cup) -->
     <ellipse cx="600" cy="446" rx="92" ry="10" fill="#E08A6E"/>
     <ellipse cx="600" cy="446" rx="84" ry="7" fill="#5E2F18"/>
@@ -1086,45 +1377,48 @@ function buildHeroSvg() {
     <circle cx="635" cy="444" r="1.4" fill="#6B4226"/>
     <circle cx="615" cy="445" r="1.2" fill="#6B4226"/>
     <circle cx="575" cy="445" r="1.2" fill="#6B4226"/>
-    <!-- decorative rim band on pot -->
+    <!-- decorative rim band -->
     <rect x="510" y="475" width="180" height="3" fill="#7D3618" opacity="0.5"/>
+    <!-- a very subtle warm wash across the upper pot (light from window) -->
+    <path d="M510 450 L690 450 L686 480 L514 480 Z" fill="#FFE0B0" opacity="0.18"/>
     <!-- pot base shadow on sill -->
     <ellipse cx="600" cy="592" rx="78" ry="4" fill="#3F2616" opacity="0.4"/>
   </g>
 
-  <!-- LAPTOP on the sill, to the right of the pot — smaller than the plant, screen toward viewer -->
+  <!-- ===================================================== -->
+  <!-- LAPTOP on the sill (polished — rounded screen, elliptical halo) -->
+  <!-- ===================================================== -->
   <g filter="url(#softShadow)">
     <!-- soft shadow under laptop -->
     <ellipse cx="930" cy="595" rx="100" ry="6" fill="#3F2616" opacity="0.22"/>
 
-    <!-- laptop base (keyboard deck) -->
+    <!-- laptop base (keyboard deck) with a bevel line at the front edge -->
     <path d="M845 595 L1015 595 L1030 583 L830 583 Z" fill="url(#laptopBody)"/>
-    <!-- base front edge -->
+    <!-- front bevel highlight -->
+    <rect x="833" y="582" width="194" height="1.5" fill="#F2E1CB" opacity="0.7"/>
+    <!-- base front edge shadow -->
     <rect x="845" y="591" width="170" height="4" fill="#8C7660" opacity="0.7"/>
-    <!-- subtle keyboard hint -->
-    <g fill="#8C7660" opacity="0.5">
-      <rect x="855" y="586" width="150" height="2" rx="1"/>
-    </g>
+    <!-- subtle keyboard band -->
+    <rect x="855" y="586" width="150" height="2" rx="1" fill="#8C7660" opacity="0.5"/>
     <!-- trackpad hint -->
     <rect x="905" y="589" width="50" height="2" rx="1" fill="#8C7660" opacity="0.5"/>
 
-    <!-- screen (tilted slightly toward viewer — back edge a bit higher than front edge) -->
+    <!-- screen (tilted slightly toward viewer, with gentle rounded corners) -->
     <!-- back outer panel -->
-    <path d="M838 583 L1022 583 L1028 510 L832 510 Z" fill="#8C7660" opacity="0.3"/>
-    <!-- screen body -->
-    <path d="M845 583 L1015 583 L1020 515 L840 515 Z" fill="url(#laptopBody)"/>
-    <!-- screen inner (dark glass) -->
-    <path d="M852 578 L1008 578 L1013 522 L847 522 Z" fill="url(#laptopScreen)"/>
-    <!-- warm screen glow (the cozy "watching" feel) -->
-    <path d="M852 578 L1008 578 L1013 522 L847 522 Z" fill="url(#screenGlow)" class="laptop-glow"/>
-    <!-- tiny abstract chart line on the screen — callback to the real chart below -->
+    <path d="M838 583 L1022 583 L1028 510 Q1028 506 1024 506 L836 506 Q832 506 832 510 Z" fill="#8C7660" opacity="0.3"/>
+    <!-- screen body with rounded top corners -->
+    <path d="M845 583 L1015 583 L1020 517 Q1020 514 1017 514 L843 514 Q840 514 840 517 Z" fill="url(#laptopBody)"/>
+    <!-- screen inner (dark glass), gently rounded -->
+    <path d="M852 578 L1008 578 L1013 524 Q1013 522 1011 522 L849 522 Q847 522 847 524 Z" fill="url(#laptopScreen)"/>
+    <!-- warm screen glow (cozy "watching" feel) -->
+    <path d="M852 578 L1008 578 L1013 524 Q1013 522 1011 522 L849 522 Q847 522 847 524 Z"
+          fill="url(#screenGlow)" class="laptop-glow"/>
+    <!-- tiny abstract chart line on the screen -->
     <g class="laptop-glow">
       <polyline points="862,562 882,558 902,548 922,552 942,540 962,545 982,535 1002,538"
                 stroke="#FFD89A" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>
-      <!-- soft underline glow under the chart -->
       <polyline points="862,562 882,558 902,548 922,552 942,540 962,545 982,535 1002,538"
                 stroke="#E08A6E" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.25"/>
-      <!-- tiny dots on the line -->
       <circle cx="902" cy="548" r="1.6" fill="#FFE9B0"/>
       <circle cx="942" cy="540" r="1.6" fill="#FFE9B0"/>
       <circle cx="982" cy="535" r="1.6" fill="#FFE9B0"/>
@@ -1132,22 +1426,36 @@ function buildHeroSvg() {
     <!-- tiny camera dot -->
     <circle cx="930" cy="519" r="0.9" fill="#5E3A24" opacity="0.7"/>
 
-    <!-- a small warm glow halo around the screen edge (very subtle) -->
-    <ellipse cx="930" cy="552" rx="90" ry="34" fill="url(#screenGlow)" opacity="0.4"/>
+    <!-- soft elliptical halo around the screen — not a hard rectangle -->
+    <ellipse cx="930" cy="552" rx="120" ry="44" fill="url(#screenHalo)" class="laptop-glow"/>
   </g>
 
-  <!-- A tiny ceramic mug on the far left of the sill — cozy detail, small -->
-  <g opacity="0.9" filter="url(#softShadow)">
-    <ellipse cx="180" cy="594" rx="22" ry="4" fill="#3F2616" opacity="0.3"/>
-    <path d="M162 568 Q162 595 180 595 Q198 595 198 568 Z" fill="#FFF7EC" stroke="#C75A3A" stroke-width="1.5"/>
-    <path d="M198 571 Q210 571 210 580 Q210 588 198 588" stroke="#C75A3A" stroke-width="1.5" fill="none"/>
-    <ellipse cx="180" cy="568" rx="18" ry="3.5" fill="#8C5A3C" opacity="0.5"/>
-    <ellipse cx="180" cy="568" rx="14" ry="2.5" fill="#4A2E1C" opacity="0.6"/>
-    <!-- a soft band on the mug -->
-    <rect x="162" y="578" width="36" height="2" fill="#C75A3A" opacity="0.4"/>
-    <!-- steam -->
-    <path d="M174 563 Q172 555 175 548 Q179 540 177 533" stroke="#C9A78D" stroke-width="1.2" fill="none" opacity="0.55" stroke-linecap="round"/>
-    <path d="M184 563 Q186 555 183 548 Q179 540 182 533" stroke="#C9A78D" stroke-width="1.2" fill="none" opacity="0.55" stroke-linecap="round"/>
+  <!-- ===================================================== -->
+  <!-- A small stack of books on the far-left of the sill —    -->
+  <!-- replaces the awkward mug; warm, cozy, intentional.      -->
+  <!-- ===================================================== -->
+  <g filter="url(#softShadow)">
+    <!-- shadow under books -->
+    <ellipse cx="200" cy="594" rx="62" ry="5" fill="#3F2616" opacity="0.30"/>
+    <!-- bottom book: warm cream, thicker -->
+    <rect x="145" y="568" width="115" height="26" rx="2" fill="#F5DCC0"/>
+    <rect x="145" y="568" width="115" height="3" fill="#FFF1D8" opacity="0.8"/>
+    <rect x="145" y="591" width="115" height="3" fill="#C09a78" opacity="0.6"/>
+    <!-- spine band -->
+    <rect x="145" y="578" width="115" height="2" fill="#C75A3A" opacity="0.55"/>
+    <!-- middle book: terracotta -->
+    <rect x="155" y="548" width="100" height="20" rx="2" fill="#C75A3A"/>
+    <rect x="155" y="548" width="100" height="3" fill="#E08A6E" opacity="0.7"/>
+    <rect x="155" y="566" width="100" height="2" fill="#8E3E20" opacity="0.7"/>
+    <!-- top book: deep green -->
+    <rect x="162" y="530" width="86" height="18" rx="2" fill="#4F6A3A"/>
+    <rect x="162" y="530" width="86" height="2.5" fill="#7A9A5C" opacity="0.7"/>
+    <rect x="162" y="546" width="86" height="2" fill="#2E4221" opacity="0.7"/>
+    <!-- tiny gold lettering hint on top book -->
+    <rect x="180" y="537" width="50" height="1.5" fill="#E8C97E" opacity="0.65"/>
+    <rect x="186" y="541" width="38" height="1" fill="#E8C97E" opacity="0.55"/>
+    <!-- a bookmark ribbon peeking -->
+    <path d="M232 530 L232 555 L228 552 L224 555 L224 530 Z" fill="#E89A78" opacity="0.85"/>
   </g>
 
 </svg>
@@ -1169,6 +1477,25 @@ function setMood(pct) {
     const el = document.getElementById(id);
     if (el) el.style.opacity = (id === active) ? '1' : '0';
   });
+
+  // Atmospheric-light groups: warm light for dry/ok, soft for moist, cool for wet.
+  // These crossfade in lockstep with the sky so the room mood follows the window.
+  const setOpacity = (id, op) => {
+    const el = document.getElementById(id);
+    if (el) el.style.opacity = String(op);
+  };
+  let lightTone;
+  if (active === 'sky-dry' || active === 'sky-ok') lightTone = 'warm';
+  else if (active === 'sky-moist') lightTone = 'soft';
+  else lightTone = 'cool';
+  ['warm', 'soft', 'cool'].forEach(tone => {
+    const on = (tone === lightTone) ? 1 : 0;
+    setOpacity('wall-' + tone, on);
+    setOpacity('sill-' + tone, on);
+    setOpacity('floor-' + tone, on);
+  });
+  // Dust motes only visible in warm light (dry/ok).
+  setOpacity('dust-warm', lightTone === 'warm' ? 1 : 0);
 
   // hide birds when rainy or overcast
   const birds = document.getElementById('birds-warm');

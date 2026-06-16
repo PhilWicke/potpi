@@ -3,882 +3,886 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>PotPi — A Field Journal</title>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<title>PotPi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 <style>
   :root {
-    --paper: #F4F1EA;
-    --paper-dim: #ECE8DE;
-    --rule: #14130F1A;
-    --rule-soft: #14130F12;
-    --ink: #14130F;
-    --ink-soft: #14130F99;
-    --ink-faint: #14130F66;
-    --green: #1C3F2C;
-    --green-soft: #1C3F2C14;
-    --warn: #8A4A1F;
+    --bg: #0A0A0A;
+    --surface: #111111;
+    --border: rgba(255, 255, 255, 0.08);
+    --border-strong: rgba(255, 255, 255, 0.12);
+    --text-1: #FAFAFA;
+    --text-2: #A3A3A3;
+    --text-3: #525252;
+    --accent: #34D399;
+    --warn: #F59E0B;
+    --error: #F87171;
   }
 
-  * { box-sizing: border-box; }
-  html, body { margin: 0; padding: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
 
-  body {
-    background: var(--paper);
-    color: var(--ink);
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    font-size: 16px;
-    line-height: 1.55;
+  html, body {
+    background: var(--bg);
+    color: var(--text-1);
+    font-family: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif;
     font-weight: 400;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeLegibility;
-  }
-
-  .wrap {
-    max-width: 720px;
-    margin: 0 auto;
-    padding: 72px 32px 96px;
-  }
-
-  /* Masthead */
-  .masthead {
-    border-bottom: 1px solid var(--ink);
-    padding-bottom: 18px;
-    margin-bottom: 56px;
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 24px;
-  }
-  .masthead .title {
-    font-family: 'Newsreader', Georgia, serif;
-    font-weight: 500;
-    font-size: 22px;
-    letter-spacing: 0.01em;
-    margin: 0;
-  }
-  .masthead .meta {
-    font-family: 'Newsreader', Georgia, serif;
-    font-style: italic;
-    font-weight: 400;
-    font-size: 14px;
-    letter-spacing: 0;
-    color: var(--ink-soft);
+    font-feature-settings: "tnum", "cv11";
     font-variant-numeric: tabular-nums;
-  }
-
-  /* Section labels */
-  .kicker {
-    font-size: 11px;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    color: var(--ink-soft);
-    margin: 0 0 14px 0;
-    font-weight: 500;
-  }
-
-  /* Hero */
-  .hero {
-    margin-bottom: 72px;
-  }
-  .hero .dek {
-    font-family: 'Newsreader', Georgia, serif;
-    font-style: italic;
-    font-weight: 400;
-    font-size: 17px;
-    color: var(--ink-soft);
-    margin: 0 0 28px 0;
-    max-width: 480px;
+    min-height: 100vh;
     line-height: 1.5;
   }
-  .hero .number {
-    font-family: 'Newsreader', Georgia, serif;
-    font-weight: 400;
-    font-size: clamp(120px, 22vw, 196px);
-    line-height: 0.92;
-    letter-spacing: -0.04em;
-    color: var(--ink);
-    margin: 0;
-    display: flex;
-    align-items: flex-start;
-    gap: 8px;
+
+  .mono {
+    font-family: 'Geist Mono', ui-monospace, SFMono-Regular, monospace;
+    font-feature-settings: "tnum", "zero";
     font-variant-numeric: tabular-nums;
   }
-  .hero .number .pct {
-    font-size: 0.32em;
-    font-weight: 400;
-    color: var(--ink-soft);
-    margin-top: 0.35em;
-    letter-spacing: 0;
-  }
-  .hero .caption {
-    margin-top: 20px;
-    font-size: 14px;
-    color: var(--ink-soft);
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    flex-wrap: wrap;
-  }
-  .hero .caption .dot {
-    display: inline-block;
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--green);
-  }
-  .hero .caption .dot.stale {
-    background: var(--warn);
-  }
-  .hero .caption .sep {
-    color: var(--ink-faint);
+
+  .container {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: 56px 32px 80px;
   }
 
-  .invalid-flag {
+  /* Top bar */
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 48px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+
+  .brand-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 12px rgba(52, 211, 153, 0.55);
+  }
+
+  .brand-dot.invalid {
+    background: var(--error);
+    box-shadow: 0 0 12px rgba(248, 113, 113, 0.55);
+  }
+
+  .status-pill {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    margin-top: 16px;
     padding: 6px 12px;
-    background: transparent;
-    border: 1px solid var(--warn);
-    color: var(--warn);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    font-size: 12px;
+    color: var(--text-2);
+  }
+
+  .pulse {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    position: relative;
+  }
+
+  .pulse::after {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
+    background: var(--accent);
+    opacity: 0.3;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0% { transform: scale(0.6); opacity: 0.5; }
+    100% { transform: scale(2.2); opacity: 0; }
+  }
+
+  /* Hero section */
+  .hero {
+    padding: 80px 0 72px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .eyebrow {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    margin-bottom: 28px;
+  }
+
+  .hero-row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 48px;
+    flex-wrap: wrap;
+  }
+
+  .hero-number {
+    font-family: 'Geist', sans-serif;
+    font-weight: 400;
+    font-size: clamp(80px, 14vw, 160px);
+    line-height: 0.9;
+    letter-spacing: -0.04em;
+    color: var(--text-1);
+    font-feature-settings: "tnum";
+    font-variant-numeric: tabular-nums;
+    display: flex;
+    align-items: baseline;
+  }
+
+  .hero-unit {
+    font-size: 0.28em;
+    color: var(--text-3);
+    margin-left: 0.15em;
+    letter-spacing: -0.02em;
+    font-weight: 400;
+  }
+
+  .hero-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    align-items: flex-end;
+    text-align: right;
+    padding-bottom: 14px;
+    min-width: 200px;
+  }
+
+  .hero-meta-label {
     font-size: 11px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    font-weight: 500;
-  }
-  .invalid-flag::before {
-    content: "";
-    width: 6px;
-    height: 6px;
-    background: var(--warn);
-    border-radius: 50%;
+    color: var(--text-3);
   }
 
-  /* Sections */
+  .hero-meta-value {
+    font-size: 14px;
+    color: var(--text-1);
+    letter-spacing: -0.01em;
+  }
+
+  .hero-meta-value .sub {
+    color: var(--text-3);
+    margin-left: 8px;
+  }
+
+  /* Section */
   section {
-    margin-bottom: 64px;
+    padding: 56px 0;
+    border-bottom: 1px solid var(--border);
   }
-  section .head-rule {
-    border-top: 1px solid var(--ink);
-    padding-top: 18px;
-    margin-bottom: 28px;
-  }
-  section h2 {
-    font-family: 'Newsreader', Georgia, serif;
-    font-weight: 500;
-    font-size: 22px;
-    letter-spacing: 0.005em;
-    margin: 0 0 4px 0;
-  }
-  section .sub {
-    font-size: 13px;
-    color: var(--ink-soft);
-    margin: 0;
+  section:last-of-type { border-bottom: none; }
+
+  .section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 32px;
+    gap: 16px;
+    flex-wrap: wrap;
   }
 
-  /* Sensor breakdown */
-  .sensors {
+  .section-title {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-2);
+  }
+
+  /* Sensor grid */
+  .sensor-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 0;
-    border-top: 1px solid var(--rule);
-    border-bottom: 1px solid var(--rule);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
   }
-  .sensor {
-    padding: 22px 0;
+
+  .sensor-card {
+    background: var(--surface);
+    padding: 28px 32px;
     display: flex;
     flex-direction: column;
+    gap: 24px;
+  }
+
+  .sensor-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .sensor-name {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-2);
+  }
+
+  .sensor-state {
+    font-size: 11px;
+    color: var(--text-3);
+    display: inline-flex;
+    align-items: center;
     gap: 6px;
   }
-  .sensor + .sensor {
-    border-left: 1px solid var(--rule);
-    padding-left: 28px;
+
+  .sensor-state .dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--accent);
   }
-  .sensor:first-child {
-    padding-right: 28px;
+
+  .sensor-body {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
   }
-  .sensor .label {
-    font-size: 11px;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--ink-soft);
-    font-weight: 500;
-  }
-  .sensor .pct-row {
-    font-family: 'Newsreader', Georgia, serif;
-    font-size: 38px;
+
+  .sensor-pct {
+    font-family: 'Geist Mono', monospace;
+    font-size: 40px;
     font-weight: 400;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.03em;
+    color: var(--text-1);
     line-height: 1;
-    color: var(--ink);
     font-variant-numeric: tabular-nums;
   }
-  .sensor .pct-row .unit {
+
+  .sensor-pct .unit {
     font-size: 18px;
-    color: var(--ink-soft);
-    margin-left: 2px;
+    color: var(--text-3);
+    margin-left: 4px;
   }
-  .sensor .volt {
-    font-size: 13px;
-    color: var(--ink-soft);
+
+  .sensor-volt {
+    text-align: right;
+  }
+
+  .sensor-volt-label {
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    margin-bottom: 6px;
+  }
+
+  .sensor-volt-value {
+    font-family: 'Geist Mono', monospace;
+    font-size: 14px;
+    color: var(--text-2);
+    letter-spacing: -0.01em;
     font-variant-numeric: tabular-nums;
+  }
+
+  .sensor-bar {
+    height: 2px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 1px;
+    overflow: hidden;
+  }
+
+  .sensor-bar-fill {
+    height: 100%;
+    background: var(--accent);
+    transition: width 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  /* Window selector */
+  .window-selector {
+    display: inline-flex;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 3px;
+    gap: 2px;
+  }
+
+  .window-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-2);
+    font-family: 'Geist', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    letter-spacing: -0.01em;
+    transition: all 0.15s ease;
+  }
+
+  .window-btn:hover {
+    color: var(--text-1);
+  }
+
+  .window-btn.active {
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text-1);
   }
 
   /* Chart */
-  .chart-head {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 16px;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
+  .chart-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 32px;
+    position: relative;
   }
-  .windows {
-    display: flex;
-    gap: 0;
-    border: 1px solid var(--ink);
-  }
-  .windows button {
-    background: transparent;
-    border: none;
-    border-right: 1px solid var(--ink);
-    padding: 7px 13px;
-    font-family: 'Inter', sans-serif;
-    font-size: 11px;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--ink);
-    cursor: pointer;
-    font-weight: 500;
-    transition: background 0.15s ease;
-  }
-  .windows button:last-child { border-right: none; }
-  .windows button:hover { background: var(--green-soft); }
-  .windows button.active {
-    background: var(--ink);
-    color: var(--paper);
-  }
-  .chart-frame {
-    border: 1px solid var(--rule);
-    padding: 20px 16px 12px;
-    background: var(--paper);
+
+  .chart-canvas-wrap {
     height: 320px;
     position: relative;
   }
+
   .chart-empty {
     position: absolute;
     inset: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--ink-faint);
-    font-family: 'Newsreader', Georgia, serif;
-    font-style: italic;
-    font-size: 15px;
+    color: var(--text-3);
+    font-size: 13px;
   }
 
-  /* Watering log */
-  .log {
+  /* Watering log table */
+  .log-table {
     width: 100%;
     border-collapse: collapse;
-    font-variant-numeric: tabular-nums;
-  }
-  .log thead th {
-    text-align: left;
-    font-size: 11px;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--ink-soft);
-    font-weight: 500;
-    padding: 0 0 12px 0;
-    border-bottom: 1px solid var(--ink);
-  }
-  .log thead th:nth-child(2),
-  .log thead th:nth-child(3) {
-    text-align: right;
-  }
-  .log tbody td {
-    padding: 14px 0;
-    border-bottom: 1px solid var(--rule);
-    font-size: 14px;
-  }
-  .log tbody td:nth-child(2),
-  .log tbody td:nth-child(3) {
-    text-align: right;
-  }
-  .log tbody td .when {
-    color: var(--ink);
-  }
-  .log tbody td .ago {
-    color: var(--ink-faint);
-    font-size: 12px;
-    margin-left: 8px;
-  }
-  .log tbody td .pct {
-    color: var(--green);
-    font-weight: 500;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
   }
 
-  .empty-state {
-    padding: 28px 0;
-    font-family: 'Newsreader', Georgia, serif;
-    font-style: italic;
-    font-size: 16px;
-    color: var(--ink-soft);
-    border-bottom: 1px solid var(--rule);
+  .log-table th {
+    text-align: left;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    padding: 14px 24px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.015);
+  }
+
+  .log-table td {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    color: var(--text-1);
+    letter-spacing: -0.01em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .log-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .log-table td.mono {
+    color: var(--text-2);
+  }
+
+  .log-empty {
+    padding: 40px 24px;
+    text-align: center;
+    color: var(--text-3);
+    font-size: 13px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+  }
+
+  /* Health banner */
+  .health-banner {
+    background: rgba(248, 113, 113, 0.06);
+    border: 1px solid rgba(248, 113, 113, 0.2);
+    border-radius: 6px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 32px;
+  }
+
+  .health-banner-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--error);
+    flex-shrink: 0;
+  }
+
+  .health-banner-text {
+    font-size: 13px;
+    color: var(--text-1);
+    letter-spacing: -0.01em;
+  }
+
+  .health-banner-text .label {
+    color: var(--error);
+    font-weight: 500;
+    margin-right: 8px;
   }
 
   /* Footer */
   footer {
-    margin-top: 96px;
-    padding-top: 22px;
-    border-top: 1px solid var(--ink);
+    padding: 48px 0 0;
     display: flex;
+    align-items: center;
     justify-content: space-between;
-    align-items: baseline;
+    flex-wrap: wrap;
     gap: 16px;
-    font-size: 11px;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--ink-soft);
-  }
-  footer a {
-    color: var(--ink);
-    text-decoration: none;
-    border-bottom: 1px solid var(--ink-faint);
-    padding-bottom: 1px;
-  }
-  footer a:hover {
-    border-bottom-color: var(--ink);
-    color: var(--green);
+    color: var(--text-3);
+    font-size: 12px;
   }
 
-  /* Loading */
-  .loading {
-    font-family: 'Newsreader', Georgia, serif;
-    font-style: italic;
-    color: var(--ink-soft);
-    font-size: 17px;
+  footer a {
+    color: var(--text-2);
+    text-decoration: none;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 1px;
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+
+  footer a:hover {
+    color: var(--text-1);
+    border-color: var(--text-3);
   }
 
   /* Mobile */
-  @media (max-width: 600px) {
-    .wrap { padding: 40px 22px 64px; }
-    .masthead { margin-bottom: 40px; }
-    .hero { margin-bottom: 56px; }
-    .hero .number { font-size: clamp(96px, 28vw, 140px); }
-    .sensors { grid-template-columns: 1fr; }
-    .sensor + .sensor {
-      border-left: none;
-      border-top: 1px solid var(--rule);
-      padding-left: 0;
-      padding-top: 22px;
-    }
-    .sensor:first-child {
-      padding-right: 0;
-    }
-    .chart-frame { height: 260px; padding: 14px 8px 8px; }
-    footer { flex-direction: column; align-items: flex-start; gap: 10px; }
+  @media (max-width: 720px) {
+    .container { padding: 32px 20px 56px; }
+    .hero { padding: 56px 0 48px; }
+    .hero-row { gap: 24px; }
+    .hero-meta { align-items: flex-start; text-align: left; min-width: 0; }
+    .sensor-grid { grid-template-columns: 1fr; }
+    .sensor-card { padding: 24px; }
+    .chart-wrap { padding: 20px; }
+    .chart-canvas-wrap { height: 240px; }
+    .log-table th, .log-table td { padding: 12px 16px; }
+    section { padding: 40px 0; }
+    .section-head { margin-bottom: 24px; }
   }
 </style>
 </head>
 <body>
-<div class="wrap">
+  <div class="container">
 
-  <header class="masthead">
-    <h1 class="title">PotPi <span style="font-style: italic; font-weight: 400; color: var(--ink-soft);">— A Field Journal</span></h1>
-    <div class="meta" id="masthead-date">—</div>
-  </header>
-
-  <!-- HERO -->
-  <section class="hero">
-    <p class="kicker">Current Reading</p>
-    <p class="dek">Soil moisture in a single potted plant, observed continuously and logged by hand of the machine.</p>
-    <div class="number" id="hero-number">
-      <span id="hero-value" class="loading">—</span><span class="pct">%</span>
-    </div>
-    <div class="caption" id="hero-caption">
-      <span class="loading">Waiting for the first reading.</span>
-    </div>
-    <div id="invalid-flag-slot"></div>
-  </section>
-
-  <!-- SENSORS -->
-  <section>
-    <div class="head-rule">
-      <h2>By the Probes</h2>
-      <p class="sub">Two channels, two opinions. The hero is the mean of the valid ones.</p>
-    </div>
-    <div class="sensors">
-      <div class="sensor">
-        <span class="label">Channel 0</span>
-        <div class="pct-row"><span id="ch0-pct">—</span><span class="unit">%</span></div>
-        <div class="volt" id="ch0-volt">— V</div>
+    <div class="topbar">
+      <div class="brand">
+        <span class="brand-dot" id="brand-dot"></span>
+        <span>PotPi</span>
       </div>
-      <div class="sensor">
-        <span class="label">Channel 1</span>
-        <div class="pct-row"><span id="ch1-pct">—</span><span class="unit">%</span></div>
-        <div class="volt" id="ch1-volt">— V</div>
+      <div class="status-pill">
+        <span class="pulse" id="status-pulse"></span>
+        <span id="status-text">Live</span>
       </div>
     </div>
-  </section>
 
-  <!-- CHART -->
-  <section>
-    <div class="head-rule">
-      <h2>The Record</h2>
-      <p class="sub">Moisture, averaged across valid probes, plotted over time.</p>
-    </div>
-    <div class="chart-head">
-      <div></div>
-      <div class="windows" id="windows" role="tablist">
-        <button data-window="24h" class="active">24 H</button>
-        <button data-window="7d">7 D</button>
-        <button data-window="30d">30 D</button>
-        <button data-window="all">All</button>
+    <!-- HERO -->
+    <div class="hero">
+      <div class="eyebrow">Soil moisture</div>
+      <div class="hero-row">
+        <div class="hero-number">
+          <span id="hero-value">--</span><span class="hero-unit">%</span>
+        </div>
+        <div class="hero-meta">
+          <div>
+            <div class="hero-meta-label">Last reading</div>
+            <div class="hero-meta-value mono" id="last-reading">--</div>
+          </div>
+          <div>
+            <div class="hero-meta-label">Device</div>
+            <div class="hero-meta-value mono" id="device-name">--</div>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="chart-frame">
-      <canvas id="chart"></canvas>
-      <div class="chart-empty" id="chart-empty" style="display: none;">No readings in this window.</div>
-    </div>
-  </section>
 
-  <!-- WATERING -->
-  <section>
-    <div class="head-rule">
-      <h2>Waterings</h2>
-      <p class="sub">Every time the pump fired, what the soil said, and for how long.</p>
-    </div>
-    <div id="watering-host">
-      <div class="empty-state">No watering events logged yet.</div>
-    </div>
-  </section>
+    <!-- HEALTH (conditional) -->
+    <div id="health-section"></div>
 
-  <footer>
-    <div>An exercise in attention.</div>
-    <a href="https://github.com/PhilWicke/potpi" target="_blank" rel="noopener">github.com/PhilWicke/potpi</a>
-  </footer>
+    <!-- SENSORS -->
+    <section>
+      <div class="section-head">
+        <div class="section-title">Sensors</div>
+      </div>
+      <div class="sensor-grid">
+        <div class="sensor-card">
+          <div class="sensor-card-head">
+            <span class="sensor-name">Channel 0</span>
+            <span class="sensor-state"><span class="dot" id="ch0-dot"></span><span id="ch0-state">Active</span></span>
+          </div>
+          <div class="sensor-body">
+            <div class="sensor-pct"><span id="ch0-pct">--</span><span class="unit">%</span></div>
+            <div class="sensor-volt">
+              <div class="sensor-volt-label">Voltage</div>
+              <div class="sensor-volt-value"><span id="ch0-volt">--</span> V</div>
+            </div>
+          </div>
+          <div class="sensor-bar"><div class="sensor-bar-fill" id="ch0-bar" style="width:0%"></div></div>
+        </div>
+        <div class="sensor-card">
+          <div class="sensor-card-head">
+            <span class="sensor-name">Channel 1</span>
+            <span class="sensor-state"><span class="dot" id="ch1-dot"></span><span id="ch1-state">Active</span></span>
+          </div>
+          <div class="sensor-body">
+            <div class="sensor-pct"><span id="ch1-pct">--</span><span class="unit">%</span></div>
+            <div class="sensor-volt">
+              <div class="sensor-volt-label">Voltage</div>
+              <div class="sensor-volt-value"><span id="ch1-volt">--</span> V</div>
+            </div>
+          </div>
+          <div class="sensor-bar"><div class="sensor-bar-fill" id="ch1-bar" style="width:0%"></div></div>
+        </div>
+      </div>
+    </section>
 
-</div>
+    <!-- CHART -->
+    <section>
+      <div class="section-head">
+        <div class="section-title">Moisture over time</div>
+        <div class="window-selector" id="window-selector">
+          <button class="window-btn" data-window="24h">24h</button>
+          <button class="window-btn" data-window="7d">7d</button>
+          <button class="window-btn" data-window="30d">30d</button>
+          <button class="window-btn active" data-window="all">All</button>
+        </div>
+      </div>
+      <div class="chart-wrap">
+        <div class="chart-canvas-wrap">
+          <canvas id="chart"></canvas>
+          <div class="chart-empty" id="chart-empty" style="display:none">No readings in selected window</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- WATERING -->
+    <section>
+      <div class="section-head">
+        <div class="section-title">Watering log</div>
+      </div>
+      <div id="watering-container"></div>
+    </section>
+
+    <footer>
+      <span>PotPi soil moisture monitor</span>
+      <span>Source: <a href="https://github.com/PhilWicke/potpi" target="_blank" rel="noopener">github.com/PhilWicke/potpi</a></span>
+    </footer>
+
+  </div>
 
 <script>
 (function() {
   'use strict';
 
-  // ---------- Utilities ----------
+  const state = {
+    rows: [],
+    window: 'all',
+    chart: null
+  };
 
-  function parseTimestamp(s) {
-    if (!s) return null;
-    // CSV timestamps may be ISO-ish; ensure JS can parse them
-    var t = s.trim().replace(' ', 'T');
-    var d = new Date(t);
-    if (isNaN(d.getTime())) {
-      // try without T replacement
-      d = new Date(s);
+  // ---------- Data loading ----------
+  async function loadData() {
+    try {
+      const indexResp = await fetch('data/index.json', { cache: 'no-cache' });
+      if (!indexResp.ok) throw new Error('index.json missing');
+      const index = await indexResp.json();
+      const files = (index.files || []);
+
+      const all = [];
+      for (const f of files) {
+        try {
+          const r = await fetch(f, { cache: 'no-cache' });
+          if (!r.ok) continue;
+          const text = await r.text();
+          const parsed = parseCSV(text);
+          all.push(...parsed);
+        } catch (e) {
+          // skip
+        }
+      }
+
+      // Filter out smoke devices
+      const filtered = all.filter(r => !(r.device && r.device.toLowerCase().startsWith('smoke')));
+      filtered.sort((a, b) => a.ts - b.ts);
+      state.rows = filtered;
+      render();
+    } catch (e) {
+      renderEmpty();
     }
-    return isNaN(d.getTime()) ? null : d;
   }
-
-  function fmtRelative(date, now) {
-    if (!date) return '—';
-    var diff = (now - date) / 1000; // seconds
-    if (diff < 0) diff = 0;
-    if (diff < 45) return 'just now';
-    if (diff < 90) return '1 min ago';
-    if (diff < 3600) return Math.round(diff / 60) + ' min ago';
-    if (diff < 5400) return '1 hour ago';
-    if (diff < 86400) return Math.round(diff / 3600) + ' hours ago';
-    if (diff < 172800) return 'yesterday';
-    if (diff < 604800) return Math.round(diff / 86400) + ' days ago';
-    return null; // signal: use absolute
-  }
-
-  function fmtAbsolute(date) {
-    if (!date) return '—';
-    var months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-    var h = date.getHours();
-    var m = date.getMinutes();
-    var ampm = h >= 12 ? 'p.m.' : 'a.m.';
-    var hr = h % 12; if (hr === 0) hr = 12;
-    var mm = m < 10 ? '0' + m : '' + m;
-    return months[date.getMonth()] + ' ' + date.getDate() + ', ' + date.getFullYear() + ', ' + hr + ':' + mm + ' ' + ampm;
-  }
-
-  function fmtIssueDate(date) {
-    if (!date) return '';
-    var months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-    return months[date.getMonth()] + ' ' + date.getDate() + ', ' + date.getFullYear();
-  }
-
-  function fmtTimestampShort(date) {
-    if (!date) return '—';
-    var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    var h = date.getHours();
-    var m = date.getMinutes();
-    var mm = m < 10 ? '0' + m : '' + m;
-    return months[date.getMonth()] + ' ' + date.getDate() + ' · ' + h + ':' + mm;
-  }
-
-  function fmtPercent(v) {
-    if (v === null || v === undefined || isNaN(v)) return '—';
-    return Math.round(v) + '';
-  }
-
-  function fmtPercentOne(v) {
-    if (v === null || v === undefined || isNaN(v)) return '—';
-    return v.toFixed(1);
-  }
-
-  function fmtVolt(v) {
-    if (v === null || v === undefined || isNaN(v)) return '— V';
-    return v.toFixed(3) + ' V';
-  }
-
-  function fmtDuration(s) {
-    if (s === null || s === undefined || isNaN(s)) return '—';
-    if (s < 60) return s.toFixed(1) + ' s';
-    var mins = Math.floor(s / 60);
-    var rem = Math.round(s - mins * 60);
-    return mins + 'm ' + rem + 's';
-  }
-
-  // ---------- CSV ----------
 
   function parseCSV(text) {
-    var lines = text.split(/\r?\n/).filter(function(l){ return l.length > 0; });
-    if (lines.length === 0) return [];
-    var header = lines[0].split(',').map(function(h){ return h.trim(); });
-    var out = [];
-    for (var i = 1; i < lines.length; i++) {
-      var cols = lines[i].split(',');
+    const lines = text.trim().split(/\r?\n/);
+    if (lines.length < 2) return [];
+    const header = lines[0].split(',').map(s => s.trim());
+    const idx = {};
+    header.forEach((h, i) => { idx[h] = i; });
+    const rows = [];
+    for (let i = 1; i < lines.length; i++) {
+      const cols = lines[i].split(',');
       if (cols.length < header.length) continue;
-      var row = {};
-      for (var j = 0; j < header.length; j++) {
-        row[header[j]] = cols[j] !== undefined ? cols[j].trim() : '';
-      }
-      out.push(row);
+      const ts = new Date(cols[idx.timestamp]);
+      if (isNaN(ts.getTime())) continue;
+      rows.push({
+        ts,
+        v0: parseFloat(cols[idx.voltage_ch0]),
+        v1: parseFloat(cols[idx.voltage_ch1]),
+        p0: parseFloat(cols[idx.percent_ch0]),
+        p1: parseFloat(cols[idx.percent_ch1]),
+        pm: parseFloat(cols[idx.percent_mean]),
+        valid: String(cols[idx.valid]).trim().toLowerCase() === 'true',
+        watered: String(cols[idx.watered]).trim().toLowerCase() === 'true',
+        pump: parseFloat(cols[idx.pump_seconds]) || 0,
+        device: (cols[idx.device] || '').trim()
+      });
     }
-    return out;
+    return rows;
   }
 
-  function normalizeRow(r) {
-    function num(v) {
-      if (v === '' || v === undefined || v === null) return null;
-      var n = parseFloat(v);
-      return isNaN(n) ? null : n;
+  // ---------- Rendering ----------
+  function render() {
+    if (!state.rows.length) {
+      renderEmpty();
+      return;
     }
-    function bool(v) {
-      if (v === undefined || v === null) return null;
-      var s = ('' + v).trim().toLowerCase();
-      if (s === 'true' || s === '1' || s === 'yes') return true;
-      if (s === 'false' || s === '0' || s === 'no' || s === '') return false;
-      return null;
+
+    const latest = state.rows[state.rows.length - 1];
+
+    // Hero
+    document.getElementById('hero-value').textContent = formatPct(latest.pm);
+    document.getElementById('last-reading').textContent = formatRelativeOrAbsolute(latest.ts);
+    document.getElementById('device-name').textContent = latest.device || '—';
+
+    // Brand dot color reflects validity
+    const brandDot = document.getElementById('brand-dot');
+    if (!latest.valid) {
+      brandDot.classList.add('invalid');
+    } else {
+      brandDot.classList.remove('invalid');
     }
-    return {
-      ts: parseTimestamp(r.timestamp),
-      v0: num(r.voltage_ch0),
-      v1: num(r.voltage_ch1),
-      p0: num(r.percent_ch0),
-      p1: num(r.percent_ch1),
-      pmean: num(r.percent_mean),
-      valid: bool(r.valid),
-      watered: bool(r.watered),
-      pump: num(r.pump_seconds),
-      device: (r.device || '').trim()
-    };
+
+    // Sensors
+    setSensor('ch0', latest.p0, latest.v0, latest.valid);
+    setSensor('ch1', latest.p1, latest.v1, latest.valid);
+
+    // Health banner
+    renderHealth(latest);
+
+    // Chart
+    renderChart();
+
+    // Watering log
+    renderWatering();
   }
 
-  // ---------- Data load ----------
-
-  async function loadAll() {
-    var indexResp;
-    try {
-      indexResp = await fetch('data/index.json', { cache: 'no-store' });
-    } catch (e) {
-      return [];
+  function setSensor(prefix, pct, volt, valid) {
+    document.getElementById(prefix + '-pct').textContent = formatPct(pct);
+    document.getElementById(prefix + '-volt').textContent = isFinite(volt) ? volt.toFixed(4) : '—';
+    const bar = document.getElementById(prefix + '-bar');
+    const w = Math.max(0, Math.min(100, isFinite(pct) ? pct : 0));
+    bar.style.width = w + '%';
+    const stateEl = document.getElementById(prefix + '-state');
+    const dotEl = document.getElementById(prefix + '-dot');
+    if (valid) {
+      stateEl.textContent = 'Active';
+      dotEl.style.background = 'var(--accent)';
+    } else {
+      stateEl.textContent = 'Check';
+      dotEl.style.background = 'var(--error)';
     }
-    if (!indexResp.ok) return [];
-    var idx;
-    try {
-      idx = await indexResp.json();
-    } catch (e) {
-      return [];
-    }
-    var files = (idx && Array.isArray(idx.files)) ? idx.files : [];
-    if (files.length === 0) return [];
-
-    var all = [];
-    var results = await Promise.all(files.map(function(path) {
-      return fetch(path, { cache: 'no-store' })
-        .then(function(r){ return r.ok ? r.text() : ''; })
-        .catch(function(){ return ''; });
-    }));
-
-    for (var i = 0; i < results.length; i++) {
-      var text = results[i];
-      if (!text) continue;
-      var rows = parseCSV(text).map(normalizeRow);
-      for (var j = 0; j < rows.length; j++) {
-        var row = rows[j];
-        if (!row.ts) continue;
-        if (row.device && row.device.toLowerCase().indexOf('smoke') === 0) continue;
-        all.push(row);
-      }
-    }
-
-    all.sort(function(a, b) { return a.ts - b.ts; });
-    return all;
   }
 
-  // ---------- Render: hero + sensors ----------
+  function renderHealth(latest) {
+    const container = document.getElementById('health-section');
+    container.innerHTML = '';
+    if (!latest.valid) {
+      const div = document.createElement('div');
+      div.style.paddingTop = '40px';
+      div.innerHTML = `
+        <div class="health-banner">
+          <span class="health-banner-dot"></span>
+          <div class="health-banner-text">
+            <span class="label">Sensor warning</span>
+            <span>Latest reading flagged as invalid. Check sensor placement and wiring.</span>
+          </div>
+        </div>
+      `;
+      container.appendChild(div);
+    }
+  }
 
   function renderEmpty() {
     document.getElementById('hero-value').textContent = '—';
-    document.getElementById('hero-value').classList.remove('loading');
-    document.getElementById('hero-caption').innerHTML =
-      '<span style="font-family: \'Newsreader\', Georgia, serif; font-style: italic;">Waiting for the first reading.</span>';
+    document.getElementById('last-reading').textContent = 'No data';
+    document.getElementById('device-name').textContent = '—';
     document.getElementById('ch0-pct').textContent = '—';
     document.getElementById('ch1-pct').textContent = '—';
-    document.getElementById('ch0-volt').textContent = '— V';
-    document.getElementById('ch1-volt').textContent = '— V';
+    document.getElementById('ch0-volt').textContent = '—';
+    document.getElementById('ch1-volt').textContent = '—';
+    document.getElementById('chart-empty').textContent = 'No readings available';
     document.getElementById('chart-empty').style.display = 'flex';
-    document.getElementById('chart-empty').textContent = 'No readings yet.';
-    var d = new Date();
-    document.getElementById('masthead-date').textContent = 'Vol. I · ' + fmtIssueDate(d);
-  }
-
-  function renderHero(latest, allRows) {
-    var heroValue = document.getElementById('hero-value');
-    heroValue.classList.remove('loading');
-
-    // Compute hero %: if latest.pmean exists, use it; else mean of valid p0/p1
-    var heroPct = null;
-    if (latest.valid !== false) {
-      if (latest.pmean !== null) {
-        heroPct = latest.pmean;
-      } else {
-        var parts = [];
-        if (latest.p0 !== null) parts.push(latest.p0);
-        if (latest.p1 !== null) parts.push(latest.p1);
-        if (parts.length) {
-          heroPct = parts.reduce(function(a,b){return a+b;},0) / parts.length;
-        }
-      }
-    } else {
-      // even when invalid, show the mean if we have it (just flag)
-      heroPct = latest.pmean !== null ? latest.pmean :
-                ((latest.p0 !== null && latest.p1 !== null) ? (latest.p0 + latest.p1)/2 :
-                 (latest.p0 !== null ? latest.p0 : latest.p1));
-    }
-
-    heroValue.textContent = fmtPercent(heroPct);
-
-    // Caption
-    var now = new Date();
-    var rel = fmtRelative(latest.ts, now);
-    var when;
-    if (rel === null) {
-      when = fmtAbsolute(latest.ts);
-    } else {
-      when = rel + ' · ' + fmtAbsolute(latest.ts);
-    }
-    var ageSec = (now - latest.ts) / 1000;
-    var stale = ageSec > 6 * 3600;
-    document.getElementById('hero-caption').innerHTML =
-      '<span class="dot' + (stale ? ' stale' : '') + '"></span>' +
-      '<span>Last reading ' + when + '</span>';
-
-    // Invalid flag
-    var flagSlot = document.getElementById('invalid-flag-slot');
-    flagSlot.innerHTML = '';
-    if (latest.valid === false) {
-      var f = document.createElement('div');
-      f.className = 'invalid-flag';
-      f.textContent = 'Sensor reported as invalid';
-      flagSlot.appendChild(f);
-    }
-
-    // Sensor breakdown
-    document.getElementById('ch0-pct').textContent = fmtPercent(latest.p0);
-    document.getElementById('ch1-pct').textContent = fmtPercent(latest.p1);
-    document.getElementById('ch0-volt').textContent = fmtVolt(latest.v0);
-    document.getElementById('ch1-volt').textContent = fmtVolt(latest.v1);
-
-    // Masthead date
-    document.getElementById('masthead-date').textContent = 'Vol. I · ' + fmtIssueDate(now);
+    document.getElementById('watering-container').innerHTML = `<div class="log-empty">No watering events recorded yet</div>`;
   }
 
   // ---------- Chart ----------
-
-  var chart = null;
-  var allDataCache = [];
-  var currentWindow = '24h';
-
-  function filterByWindow(rows, win) {
-    if (rows.length === 0) return [];
-    if (win === 'all') return rows;
-    var last = rows[rows.length - 1].ts;
-    var cutoff;
-    if (win === '24h') cutoff = new Date(last.getTime() - 24*3600*1000);
-    else if (win === '7d') cutoff = new Date(last.getTime() - 7*24*3600*1000);
-    else if (win === '30d') cutoff = new Date(last.getTime() - 30*24*3600*1000);
-    else return rows;
-    return rows.filter(function(r){ return r.ts >= cutoff; });
-  }
-
-  function buildSeries(rows) {
-    return rows.map(function(r) {
-      var y = r.pmean;
-      if (y === null) {
-        var parts = [];
-        if (r.p0 !== null) parts.push(r.p0);
-        if (r.p1 !== null) parts.push(r.p1);
-        y = parts.length ? parts.reduce(function(a,b){return a+b;},0)/parts.length : null;
-      }
-      return { x: r.ts, y: y };
-    }).filter(function(p){ return p.y !== null; });
+  function getWindowed() {
+    const now = Date.now();
+    let cutoff = null;
+    if (state.window === '24h') cutoff = now - 24 * 3600 * 1000;
+    else if (state.window === '7d') cutoff = now - 7 * 24 * 3600 * 1000;
+    else if (state.window === '30d') cutoff = now - 30 * 24 * 3600 * 1000;
+    if (cutoff === null) return state.rows.slice();
+    return state.rows.filter(r => r.ts.getTime() >= cutoff);
   }
 
   function renderChart() {
-    var rows = filterByWindow(allDataCache, currentWindow);
-    var series = buildSeries(rows);
-    var emptyEl = document.getElementById('chart-empty');
+    const data = getWindowed();
+    const emptyEl = document.getElementById('chart-empty');
+    const canvas = document.getElementById('chart');
 
-    if (series.length === 0) {
+    if (!data.length) {
+      emptyEl.textContent = 'No readings in selected window';
       emptyEl.style.display = 'flex';
-      emptyEl.textContent = 'No readings in this window.';
-      if (chart) {
-        chart.data.datasets[0].data = [];
-        chart.update('none');
-      }
-      return;
-    } else {
-      emptyEl.style.display = 'none';
-    }
-
-    var unit;
-    if (currentWindow === '24h') unit = 'hour';
-    else if (currentWindow === '7d') unit = 'day';
-    else if (currentWindow === '30d') unit = 'day';
-    else unit = 'day';
-
-    if (chart) {
-      chart.data.datasets[0].data = series;
-      chart.options.scales.x.time.unit = unit;
-      chart.update('none');
+      if (state.chart) { state.chart.destroy(); state.chart = null; }
       return;
     }
+    emptyEl.style.display = 'none';
 
-    var ctx = document.getElementById('chart').getContext('2d');
-    chart = new Chart(ctx, {
+    const points = data.map(r => ({ x: r.ts, y: isFinite(r.pm) ? r.pm : null }));
+    const singlePoint = points.length === 1;
+
+    const ds = {
+      label: 'Moisture',
+      data: points,
+      borderColor: '#34D399',
+      backgroundColor: '#34D399',
+      borderWidth: 1,
+      pointRadius: singlePoint ? 5 : 0,
+      pointHoverRadius: 5,
+      pointBackgroundColor: '#34D399',
+      pointBorderColor: '#0A0A0A',
+      pointBorderWidth: singlePoint ? 2 : 1,
+      tension: 0.25,
+      fill: false,
+      spanGaps: true
+    };
+
+    // Determine time unit
+    const span = points.length > 1
+      ? (points[points.length - 1].x - points[0].x) / 1000
+      : 0;
+    let timeUnit = 'hour';
+    if (span > 30 * 86400) timeUnit = 'week';
+    else if (span > 5 * 86400) timeUnit = 'day';
+    else if (span > 36 * 3600) timeUnit = 'day';
+    else timeUnit = 'hour';
+
+    // For single point, pad x-axis
+    let xMin, xMax;
+    if (singlePoint) {
+      const t = points[0].x.getTime();
+      xMin = new Date(t - 3600 * 1000);
+      xMax = new Date(t + 3600 * 1000);
+    }
+
+    if (state.chart) state.chart.destroy();
+
+    const ctx = canvas.getContext('2d');
+    state.chart = new Chart(ctx, {
       type: 'line',
-      data: {
-        datasets: [{
-          label: 'Moisture',
-          data: series,
-          borderColor: '#1C3F2C',
-          backgroundColor: 'transparent',
-          borderWidth: 1.5,
-          fill: false,
-          tension: 0.18,
-          pointRadius: 0,
-          pointHoverRadius: 4,
-          pointHoverBorderColor: '#1C3F2C',
-          pointHoverBackgroundColor: '#F4F1EA',
-          pointHoverBorderWidth: 1.5
-        }]
-      },
+      data: { datasets: [ds] },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        animation: false,
-        interaction: {
-          mode: 'index',
-          intersect: false
-        },
+        interaction: { intersect: false, mode: 'index' },
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: '#14130F',
-            titleColor: '#F4F1EA',
-            bodyColor: '#F4F1EA',
-            titleFont: {
-              family: 'Inter',
-              size: 11,
-              weight: '500'
-            },
-            bodyFont: {
-              family: 'Newsreader',
-              size: 14,
-              weight: '400'
-            },
+            backgroundColor: '#0A0A0A',
+            borderColor: 'rgba(255,255,255,0.12)',
+            borderWidth: 1,
+            titleColor: '#FAFAFA',
+            bodyColor: '#A3A3A3',
+            titleFont: { family: 'Geist Mono', size: 11, weight: '500' },
+            bodyFont: { family: 'Geist Mono', size: 12 },
             padding: 10,
-            cornerRadius: 0,
             displayColors: false,
             callbacks: {
-              title: function(items) {
-                if (!items.length) return '';
-                var d = new Date(items[0].parsed.x);
-                return fmtTimestampShort(d);
+              title: (items) => {
+                const d = new Date(items[0].parsed.x);
+                return d.toLocaleString(undefined, {
+                  year: 'numeric', month: 'short', day: '2-digit',
+                  hour: '2-digit', minute: '2-digit'
+                });
               },
-              label: function(item) {
-                return item.parsed.y.toFixed(1) + '% moisture';
-              }
+              label: (item) => `${item.parsed.y.toFixed(1)}%`
             }
           }
         },
         scales: {
           x: {
             type: 'time',
-            time: {
-              unit: unit,
-              displayFormats: {
-                hour: 'HH:mm',
-                day: 'MMM d'
-              }
-            },
+            time: { unit: timeUnit },
+            min: xMin,
+            max: xMax,
             grid: {
-              color: '#14130F0D',
-              drawTicks: false,
-              drawBorder: false
+              color: 'rgba(255,255,255,0.04)',
+              drawTicks: false
             },
             border: { display: false },
             ticks: {
-              color: '#14130F99',
-              font: {
-                family: 'Inter',
-                size: 10,
-                weight: '400'
-              },
+              color: '#525252',
+              font: { family: 'Geist Mono', size: 10 },
               maxRotation: 0,
-              autoSkipPadding: 24
+              autoSkipPadding: 20
             }
           },
           y: {
             min: 0,
             max: 100,
             grid: {
-              color: '#14130F0D',
-              drawTicks: false,
-              drawBorder: false
+              color: 'rgba(255,255,255,0.04)',
+              drawTicks: false
             },
             border: { display: false },
             ticks: {
-              color: '#14130F99',
-              font: {
-                family: 'Inter',
-                size: 10,
-                weight: '400'
-              },
+              color: '#525252',
+              font: { family: 'Geist Mono', size: 10 },
               stepSize: 25,
-              callback: function(v) { return v + '%'; }
+              callback: (v) => v + '%',
+              padding: 8
             }
           }
         }
@@ -886,89 +890,82 @@
     });
   }
 
-  // ---------- Watering log ----------
+  // ---------- Watering ----------
+  function renderWatering() {
+    const container = document.getElementById('watering-container');
+    const events = state.rows.filter(r => r.watered);
+    if (!events.length) {
+      container.innerHTML = `<div class="log-empty">No watering events recorded yet</div>`;
+      return;
+    }
+    const recent = events.slice().reverse().slice(0, 25);
+    const rows = recent.map(e => `
+      <tr>
+        <td class="mono">${formatAbsolute(e.ts)}</td>
+        <td class="mono">${e.pump ? e.pump.toFixed(1) + ' s' : '—'}</td>
+        <td class="mono">${isFinite(e.pm) ? e.pm.toFixed(1) + '%' : '—'}</td>
+        <td class="mono" style="color:var(--text-3)">${e.device || '—'}</td>
+      </tr>
+    `).join('');
+    container.innerHTML = `
+      <table class="log-table">
+        <thead>
+          <tr>
+            <th>Timestamp</th>
+            <th>Pump</th>
+            <th>Moisture</th>
+            <th>Device</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    `;
+  }
 
-  function renderWatering(rows) {
-    var host = document.getElementById('watering-host');
-    var events = rows.filter(function(r) {
-      return r.watered === true || (r.pump !== null && r.pump > 0);
+  // ---------- Formatting ----------
+  function formatPct(v) {
+    if (!isFinite(v)) return '—';
+    return v.toFixed(1);
+  }
+
+  function formatRelativeOrAbsolute(ts) {
+    const now = Date.now();
+    const diff = (now - ts.getTime()) / 1000;
+    if (diff < 60) return 'just now';
+    if (diff < 3600) {
+      const m = Math.round(diff / 60);
+      return m + ' min ago';
+    }
+    if (diff < 86400) {
+      const h = Math.round(diff / 3600);
+      return h + ' hr ago';
+    }
+    if (diff < 7 * 86400) {
+      const d = Math.round(diff / 86400);
+      return d + ' day' + (d === 1 ? '' : 's') + ' ago';
+    }
+    return formatAbsolute(ts);
+  }
+
+  function formatAbsolute(ts) {
+    return ts.toLocaleString(undefined, {
+      year: 'numeric', month: 'short', day: '2-digit',
+      hour: '2-digit', minute: '2-digit'
     });
-    if (events.length === 0) {
-      host.innerHTML = '<div class="empty-state">No watering events logged yet.</div>';
-      return;
-    }
-    events = events.slice().reverse().slice(0, 12); // most recent 12
-
-    var now = new Date();
-    var html = '<table class="log"><thead><tr>' +
-               '<th>When</th>' +
-               '<th>Moisture</th>' +
-               '<th>Duration</th>' +
-               '</tr></thead><tbody>';
-    for (var i = 0; i < events.length; i++) {
-      var ev = events[i];
-      var rel = fmtRelative(ev.ts, now);
-      var when;
-      if (rel === null || rel === 'just now') {
-        when = '<span class="when">' + fmtAbsolute(ev.ts) + '</span>';
-      } else {
-        when = '<span class="when">' + fmtTimestampShort(ev.ts) + '</span><span class="ago">' + rel + '</span>';
-      }
-      var pctVal = ev.pmean !== null ? ev.pmean :
-                   ((ev.p0 !== null && ev.p1 !== null) ? (ev.p0 + ev.p1)/2 :
-                    (ev.p0 !== null ? ev.p0 : ev.p1));
-      html += '<tr>' +
-              '<td>' + when + '</td>' +
-              '<td><span class="pct">' + fmtPercentOne(pctVal) + '%</span></td>' +
-              '<td>' + fmtDuration(ev.pump) + '</td>' +
-              '</tr>';
-    }
-    html += '</tbody></table>';
-    host.innerHTML = html;
   }
 
-  // ---------- Wiring ----------
+  // ---------- Window selector ----------
+  document.querySelectorAll('.window-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.window-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.window = btn.dataset.window;
+      renderChart();
+    });
+  });
 
-  function wireWindowButtons() {
-    var btns = document.querySelectorAll('#windows button');
-    for (var i = 0; i < btns.length; i++) {
-      btns[i].addEventListener('click', function(e) {
-        var b = e.currentTarget;
-        var w = b.getAttribute('data-window');
-        currentWindow = w;
-        for (var j = 0; j < btns.length; j++) btns[j].classList.remove('active');
-        b.classList.add('active');
-        renderChart();
-      });
-    }
-  }
-
-  async function main() {
-    wireWindowButtons();
-    var rows;
-    try {
-      rows = await loadAll();
-    } catch (e) {
-      rows = [];
-    }
-
-    if (!rows || rows.length === 0) {
-      renderEmpty();
-      return;
-    }
-
-    allDataCache = rows;
-    var latest = rows[rows.length - 1];
-    renderHero(latest, rows);
-    renderChart();
-    renderWatering(rows);
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', main);
-  } else {
-    main();
-  }
+  // Boot
+  loadData();
 })();
 </script>
 </body>

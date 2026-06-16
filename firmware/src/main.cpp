@@ -72,6 +72,17 @@ WiFiClientSecure secureClient;
 time_t lastWateredEpoch = 0;
 bool ntpSynced = false;
 
+// --- Command TCP server (port 23) -----------------------------------
+// Lets us send simple text commands from the Mac (e.g. via `nc`).
+// Commands:
+//   pump       — pulse pump for 2 s (manual test)
+//   pump N     — pulse pump for N seconds (capped by MAX_PUMP_SECONDS)
+//   read       — take one fresh measurement, return ch0/ch1 voltages + %
+//   status     — uptime, free heap, last-watered timestamp
+constexpr uint16_t CMD_PORT = 23;
+WiFiServer cmdServer(CMD_PORT);
+WiFiClient cmdClient;
+
 // --- Utilities -----------------------------------------------------------
 
 static int compareFloat(const void* a, const void* b) {
@@ -293,6 +304,73 @@ void setupOTA() {
     Serial.println("OTA listening");
 }
 
+// --- TCP command server ------------------------------------------------
+void setupCmdServer() {
+    cmdServer.begin();
+    cmdServer.setNoDelay(true);
+    Serial.printf("Command server listening on port %u\n", CMD_PORT);
+}
+
+void handleCmd(const String& cmdLine) {
+    if (!cmdClient || !cmdClient.connected()) return;
+    String c = cmdLine; c.trim();
+    if (c.length() == 0) return;
+    cmdClient.printf("> %s\n", c.c_str());
+
+    if (c.startsWith("pump")) {
+        float secs = 2.0f;
+        int sp = c.indexOf(' ');
+        if (sp >= 0) {
+            float v = c.substring(sp + 1).toFloat();
+            if (v > 0) secs = v;
+        }
+        cmdClient.printf("pump START %.2fs\n", secs);
+        cmdClient.flush();
+        float actual = runPump(secs);
+        cmdClient.printf("pump DONE  ran=%.2fs (cap %.1fs)\n", actual, MAX_PUMP_SECONDS);
+    } else if (c == "read") {
+        cmdClient.println("read taking measurement (~7s)...");
+        cmdClient.flush();
+        Reading r = takeReading();
+        cmdClient.printf("ch0=%.4fV  ch1=%.4fV  p0=%.1f%%  p1=%.1f%%  agg=%.1f%%  valid=%d\n",
+                         r.ch0_voltage, r.ch1_voltage, r.ch0_percent, r.ch1_percent,
+                         r.agg_percent, (int)r.valid);
+    } else if (c == "status") {
+        cmdClient.printf("uptime=%lus  heap=%u  wifi=%s  rssi=%d\n",
+                         millis() / 1000UL, ESP.getFreeHeap(),
+                         WiFi.localIP().toString().c_str(), WiFi.RSSI());
+        if (lastWateredEpoch > 0) {
+            time_t now = time(nullptr);
+            cmdClient.printf("last watered %lds ago\n", (long)(now - lastWateredEpoch));
+        } else {
+            cmdClient.println("never watered");
+        }
+    } else {
+        cmdClient.println("commands: pump [N]  |  read  |  status");
+    }
+}
+
+void serviceCmdServer() {
+    if (cmdServer.hasClient()) {
+        if (cmdClient && cmdClient.connected()) {
+            // Already have a client; bump the new one.
+            WiFiClient nc = cmdServer.accept();
+            nc.println("busy");
+            nc.stop();
+        } else {
+            cmdClient = cmdServer.accept();
+            cmdClient.setNoDelay(true);
+            cmdClient.printf("PotPi cmd  uptime=%lus  heap=%u\n",
+                             millis() / 1000UL, ESP.getFreeHeap());
+            cmdClient.println("commands: pump [N]  |  read  |  status");
+        }
+    }
+    if (cmdClient && cmdClient.connected() && cmdClient.available()) {
+        String line = cmdClient.readStringUntil('\n');
+        handleCmd(line);
+    }
+}
+
 // --- Setup --------------------------------------------------------------
 void setup() {
     // Active-LOW outputs idle HIGH before pinMode drives them.
@@ -314,6 +392,7 @@ void setup() {
 
     connectWiFi();
     setupOTA();
+    setupCmdServer();
     ntpSynced = syncTime();
 
     Serial.printf("setup done, free heap %u\n", ESP.getFreeHeap());
@@ -325,6 +404,7 @@ bool firstRun = true;
 
 void loop() {
     ArduinoOTA.handle();
+    serviceCmdServer();
 
     uint32_t nowMs = millis();
     if (firstRun || (nowMs - lastMeasurementMs) >= MEASUREMENT_INTERVAL_MS) {

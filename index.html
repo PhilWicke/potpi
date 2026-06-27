@@ -1746,6 +1746,16 @@ function renderChart() {
     ];
   }
 
+  // Scale the point markers to how many readings are actually in view, so a
+  // dense range ("all", 30d) reads as a clean trend line while a sparse range
+  // (24h) shows each individual reading as a dot. Hover still reveals any point.
+  const n = displayData.length;
+  let ptRadius;
+  if (n === 1) ptRadius = 6;        // single reading — a clear dot
+  else if (n <= 30) ptRadius = 3;   // ~a day of hourly readings — full dots
+  else if (n <= 80) ptRadius = 1.5; // up to a few days — small dots
+  else ptRadius = 0;                // many days — just the trend line
+
   chart = new Chart(canvas, {
     type: 'line',
     data: {
@@ -1757,7 +1767,8 @@ function renderChart() {
         borderWidth: 2.5,
         tension: 0.4,
         fill: true,
-        pointRadius: data.length === 1 ? 6 : 3,
+        pointRadius: ptRadius,
+        pointHitRadius: 12,         // keep hover/tooltip generous even with no visible dot
         pointBackgroundColor: '#FFF7EC',
         pointBorderColor: '#C75A3A',
         pointBorderWidth: 2,

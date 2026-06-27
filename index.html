@@ -1578,9 +1578,21 @@ function parseCsv(text) {
 /* -----------------------------------------------------------
    Data loading
    ----------------------------------------------------------- */
+// Cache-bust data fetches. `cache: 'no-store'` only bypasses the browser's
+// HTTP cache — it does NOT bypass the GitHub Pages (Fastly) CDN edge cache,
+// which serves data/*.json and data/*.csv with `Cache-Control: max-age=600`.
+// Without this, an edge node can keep serving a stale `index.json` (listing
+// fewer files than now exist) for up to 10 minutes after a new reading is
+// committed, so the dashboard appears to "lose" older days. A unique query
+// string makes each request a distinct CDN cache key, forcing a revalidation
+// against origin on every load.
+function bust(url) {
+  return url + (url.includes('?') ? '&' : '?') + '_cb=' + Date.now();
+}
+
 async function loadData() {
   try {
-    const idxRes = await fetch(DATA_INDEX, { cache: 'no-store' });
+    const idxRes = await fetch(bust(DATA_INDEX), { cache: 'no-store' });
     if (!idxRes.ok) throw new Error('no index');
     const idx = await idxRes.json();
     if (!idx.files || idx.files.length === 0) {
@@ -1591,7 +1603,7 @@ async function loadData() {
     const all = [];
     for (const f of allFiles) {
       try {
-        const r = await fetch(f, { cache: 'no-store' });
+        const r = await fetch(bust(f), { cache: 'no-store' });
         if (!r.ok) continue;
         const txt = await r.text();
         all.push(...parseCsv(txt));

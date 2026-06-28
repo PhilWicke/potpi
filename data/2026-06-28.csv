@@ -1,0 +1,2 @@
+timestamp,voltage_ch0,voltage_ch1,percent_ch0,percent_ch1,percent_mean,valid,watered,pump_seconds,device
+2026-06-28T00:43:30Z,1.6419,0.9129,84.1,77.4,80.8,true,false,0,potpi-esp01

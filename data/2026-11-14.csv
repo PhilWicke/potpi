@@ -14,3 +14,4 @@ timestamp,voltage_ch0,voltage_ch1,percent_ch0,percent_ch1,percent_mean,valid,wat
 2026-11-14T12:08:00Z,1.7032,0.9903,80.1,70.9,75.5,true,false,0,potpi-esp01
 2026-11-14T13:08:00Z,1.7032,0.9919,80.1,70.8,75.5,true,false,0,potpi-esp01
 2026-11-14T14:08:00Z,1.7065,0.9935,79.9,70.6,75.3,true,false,0,potpi-esp01
+2026-11-14T15:08:00Z,1.7065,0.9935,79.9,70.6,75.3,true,false,0,potpi-esp01
